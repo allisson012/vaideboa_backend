@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.vaideboa.Dtos.UserDto;
 import com.example.vaideboa.service.UserService;
 
+
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -26,5 +27,7 @@ public class UserController {
         {
             return ResponseEntity.ok("Usuário criado com sucesso");
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro ao criar Usuário");    }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erro ao criar Usuário"); 
+    }   
+
 }

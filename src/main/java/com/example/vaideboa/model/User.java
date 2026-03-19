@@ -31,7 +31,7 @@ public class User {
     private boolean credenciaisNaoExpiradas = true;
     private boolean ativo = true;
     // private boolean validacao
-    private char genero;
+    private String genero;
     @OneToMany(mappedBy = "user")
     private List<Avaliacao> avaliacoes;
 
