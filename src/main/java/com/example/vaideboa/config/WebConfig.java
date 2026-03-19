@@ -15,9 +15,9 @@ public class WebConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")          // todas as rotas
                         .allowedOrigins("http://localhost:8081") // seu frontend
-                        .allowedMethods("*")      // GET, POST, etc
-                        .allowedHeaders("*")
-                        .allowCredentials(true);
+                        .allowedMethods("GET", "POST", "PUT", "DELETE")
+                        .allowedHeaders("Authorization", "Content-Type")
+                        .allowCredentials(false);
             }
         };
     }
