@@ -6,7 +6,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,7 +25,7 @@ public class Avaliacao {
     private User user;
     @ManyToOne
     @JoinColumn(name = "carona_id")
-    private Carona carona;
+    private Carona carona; 
     // definir o papel do user nessa avaliação ex motorista ou passageiro
     private int estrela; // 4.5 1.0
     private String mensagem;

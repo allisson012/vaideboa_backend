@@ -27,5 +27,5 @@ public class Reserva {
     @ManyToOne
     @JoinColumn(name = "carona_id")
     private Carona carona;
-
+   
 }

@@ -26,6 +26,7 @@ public class UserService {
         user.setContaNaoBloqueada(true);
         user.setContaNaoExpirada(true);
         user.setCredenciaisNaoExpiradas(true);
+        user.setGenero("Masculino");
         var userRetorno = userRepository.save(user);
         if(userRetorno != null){
             return true;
