@@ -18,7 +18,7 @@ public class UserService {
     }
 
     public boolean cadastrarUser(UserDto userDto){
-            if(userRepository.existsByUsername(userDto.getUsername())){
+        if(userRepository.existsByUsername(userDto.getUsername())){
         throw new EmailJaCadastradoException();
     }
 

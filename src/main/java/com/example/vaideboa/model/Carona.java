@@ -1,6 +1,8 @@
 package com.example.vaideboa.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
@@ -27,11 +29,8 @@ public class Carona {
    @GeneratedValue(strategy= GenerationType.IDENTITY)
    private Long id; 
    private int qntAssentos;
-   private LocalDateTime dataHora;
- //  @Column(columnDefinition = "geometry(Point,4326)")
-   //private Point saida;
-   //@Column(columnDefinition = "geometry(Point,4326)")
-   //private Point destino;
+   private LocalDate data;
+   private LocalTime hora;
    @JsonIgnore
    @OneToMany(mappedBy = "carona")
    private List<Avaliacao> avaliacoes;
@@ -44,4 +43,5 @@ public class Carona {
    @JoinColumn(name = "rota_id")
    @JsonIgnore
    private Rota rota;
+   private boolean realizado; // carona ja foi realizada 
 }
