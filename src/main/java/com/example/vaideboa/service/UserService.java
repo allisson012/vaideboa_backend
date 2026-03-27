@@ -1,10 +1,16 @@
 package com.example.vaideboa.service;
 
+import java.util.Optional;
+
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.vaideboa.Dtos.PreferenciasDto;
 import com.example.vaideboa.Dtos.UserDto;
+import com.example.vaideboa.Dtos.UserRetornoDto;
 import com.example.vaideboa.exception.EmailJaCadastradoException;
+import com.example.vaideboa.model.Preferencias;
 import com.example.vaideboa.model.User;
 import com.example.vaideboa.repository.UserRepository;
 
@@ -20,7 +26,7 @@ public class UserService {
     public boolean cadastrarUser(UserDto userDto){
         if(userRepository.existsByUsername(userDto.getUsername())){
         throw new EmailJaCadastradoException();
-    }
+        }
 
         String senhaCriptografada = passwordEncoder.encode(userDto.getPassword());
         User user = new User();
@@ -37,5 +43,25 @@ public class UserService {
             return true;
         }
         return false;
+    }
+
+    public UserRetornoDto buscarUserPorId(String username){
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if(userOpt.isEmpty()){
+            throw new RuntimeException("Usuário não encontrado");
+        }
+        User user = userOpt.get();
+        String dataNascimento = user.getDataNascimento() != null
+        ? user.getDataNascimento().toString()
+        : "Não informado";
+        Preferencias pref = user.getPreferencia();
+        PreferenciasDto preferenciasDto = new PreferenciasDto(
+            pref != null && pref.getConversa() != null ? pref.getConversa().getDescricao() : "TALVEZ",
+            pref != null && pref.getMusica() != null ? pref.getMusica().getDescricao() : "TALVEZ",
+            pref != null && pref.getCigarro() != null ? pref.getCigarro().getDescricao() : "TALVEZ",
+            pref != null && pref.getAnimais() != null ? pref.getAnimais().getDescricao() : "TALVEZ"
+        );
+        UserRetornoDto userRetornoDto = new UserRetornoDto(user.getNome(), user.getUsername(), user.getCpf(), user.getTelefone(), dataNascimento, user.getGenero(), preferenciasDto);
+        return userRetornoDto;
     }
 }
