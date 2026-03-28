@@ -3,10 +3,14 @@ package com.example.vaideboa.model;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.example.vaideboa.model.enums.Generos;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -40,7 +44,8 @@ public class User {
     private boolean credenciaisNaoExpiradas = true;
     private boolean ativo = true;
     // private boolean validacao -> não sei ainda como vai funcionar a validação
-    private String genero;
+    @Enumerated(EnumType.STRING)
+    private Generos genero;
     @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<Avaliacao> avaliacoes;
@@ -50,6 +55,6 @@ public class User {
     @OneToMany(mappedBy = "passageiro")
     private List<Reserva> minhasReservas;
     @JsonIgnore
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private Preferencias preferencia;
 }

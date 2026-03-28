@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.vaideboa.Dtos.BuscaCaronaDto;
 import com.example.vaideboa.Dtos.BuscaRetornaDto;
-import com.example.vaideboa.model.Carona;
+
 import com.example.vaideboa.service.ReservaService;
 
 @RestController

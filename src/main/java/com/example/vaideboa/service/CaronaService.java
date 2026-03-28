@@ -32,8 +32,8 @@ public class CaronaService {
     }
 
 
-    public boolean cadastrarCarona(CaronaDto caronaDto){
-      Optional<User> userOpt = userRepository.findById(caronaDto.getUserId());
+    public boolean cadastrarCarona(CaronaDto caronaDto , String username){
+      Optional<User> userOpt = userRepository.findByUsername(username);
       if(userOpt.isEmpty()){
         return false;
       }

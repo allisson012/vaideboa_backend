@@ -1,9 +1,8 @@
 package com.example.vaideboa.controller;
 
-import org.springframework.security.oauth2.jwt.Jwt;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -11,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.vaideboa.Dtos.UserDto;
 import com.example.vaideboa.Dtos.UserRetornoDto;
-import com.example.vaideboa.model.User;
+
 import com.example.vaideboa.service.UserService;
 
 
@@ -34,11 +33,11 @@ public class UserController {
         }
         return ResponseEntity.badRequest().body("Erro ao criar Usuário"); 
     }  
-    
+
     @GetMapping("/me")
-    public ResponseEntity<UserRetornoDto> buscarUser(@AuthenticationPrincipal Jwt jwt){
-        String username = jwt.getSubject();
-        return ResponseEntity.ok(userService.buscarUserPorId(username));
-    }
+    public ResponseEntity<UserRetornoDto> buscarUser(Authentication authentication){
+    String username = authentication.getName();
+    return ResponseEntity.ok(userService.buscarUserPorId(username));
+}
 
 }

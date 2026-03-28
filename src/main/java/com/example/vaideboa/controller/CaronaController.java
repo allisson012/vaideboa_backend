@@ -1,6 +1,7 @@
 package com.example.vaideboa.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,10 +20,12 @@ public class CaronaController {
     }
 
     @PostMapping("/cadastrar")
-    public ResponseEntity<?> cadastrarCarona(@RequestBody CaronaDto caronaDto){
-        boolean retorno = caronaService.cadastrarCarona(caronaDto);
+    public ResponseEntity<?> cadastrarCarona(@RequestBody CaronaDto caronaDto, Authentication auth){
+        String username = auth.getName();
+        boolean retorno = caronaService.cadastrarCarona(caronaDto, username);
         if(retorno == false)
         {
+            // melhorar o retorno pois esta muito subjetivo
             return ResponseEntity.badRequest().body("Erro ao criar carona");
         }
         return ResponseEntity.ok("Carona criada com sucesso");
