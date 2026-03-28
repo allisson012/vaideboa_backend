@@ -32,11 +32,14 @@ public class ReservaService {
 
 
     public List<BuscaRetornaDto> buscarCaronas(BuscaCaronaDto buscaDto){
+        Point saida = geometryFactory.createPoint(
+        new Coordinate(buscaDto.getSaidaLon(), buscaDto.getSaidaLat())
+      );
         Point destino = geometryFactory.createPoint(
         new Coordinate(buscaDto.getDestinoLon(), buscaDto.getDestinoLat())
       );
         List<BuscaRetornaDto> buscasRetornosDto = new ArrayList<>();
-        Optional<List<Rota>> rotasOpt = rotaRepository.buscarCaronas(destino);
+        Optional<List<Rota>> rotasOpt = rotaRepository.buscarCaronas(saida,destino);
         List<Rota> rotas = new ArrayList<>();
         Optional<List<Carona>> caronasOpt = Optional.empty();
         List<Carona> caronas = new ArrayList<>();
