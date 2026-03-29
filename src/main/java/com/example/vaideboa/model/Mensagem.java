@@ -4,6 +4,8 @@ package com.example.vaideboa.model;
 
 import java.sql.Timestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,11 +24,13 @@ public class Mensagem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "autor_id")
     private User autor;
     private String mensagem;
     private Timestamp enviadoEm;
+    @JsonIgnore
     @ManyToOne()
     @JoinColumn(name = "chat_id")
     private Chat chat;
