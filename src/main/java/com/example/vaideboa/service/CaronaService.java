@@ -54,6 +54,7 @@ public class CaronaService {
         return false;
       }
       carona.setQntAssentos(caronaDto.getQntAssentos());
+      carona.setVagasDisponiveis(caronaDto.getQntAssentos());
       carona.setMotorista(user);
       carona.setData(caronaDto.getData());
       carona.setHora(caronaDto.getHora());

@@ -29,6 +29,7 @@ public class Carona {
    @GeneratedValue(strategy= GenerationType.IDENTITY)
    private Long id; 
    private int qntAssentos;
+   private int vagasDisponiveis;
    private LocalDate data;
    private LocalTime hora;
    @JsonIgnore
