@@ -29,4 +29,15 @@ public class RotaPoint {
     private Rota rota;
     @Column(columnDefinition = "geometry(Point,4326)")
     private Point localizacao;
+
+    /*
+        @Column(columnDefinition = "geometry(LineString,4326)")
+        private LineString geometria;
+
+        private Double distancia;
+
+        private Double duracao;
+
+        
+    */
 }
