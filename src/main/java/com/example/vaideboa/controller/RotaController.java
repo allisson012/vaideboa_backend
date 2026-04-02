@@ -1,16 +1,17 @@
 package com.example.vaideboa.controller;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.vaideboa.Dtos.RotaTeste;
 import com.example.vaideboa.service.RotaService;
 
-import org.apache.catalina.connector.Response;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
@@ -85,6 +86,9 @@ public class RotaController {
       return ResponseEntity.ok(kms);
     }
 
-    // criar metodo para buscar a distancia entre dois pontos
+    @GetMapping("/buscar/front/{id}")
+    public ResponseEntity<List<Map<String, Double>>> retornarParaFront(@PathVariable Long id){
+      return ResponseEntity.ok(rotaService.retornarParaFront(id));
+    }
 
 }

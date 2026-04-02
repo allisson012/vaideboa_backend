@@ -29,8 +29,6 @@ public class ReservaService {
         this.caronaRepository = caronaRepository;
     }
 
-
-
     public List<BuscaRetornaDto> buscarCaronas(BuscaCaronaDto buscaDto){
         Point saida = geometryFactory.createPoint(
         new Coordinate(buscaDto.getSaidaLon(), buscaDto.getSaidaLat())
@@ -39,21 +37,7 @@ public class ReservaService {
         new Coordinate(buscaDto.getDestinoLon(), buscaDto.getDestinoLat())
       );
         List<BuscaRetornaDto> buscasRetornosDto = new ArrayList<>();
-        Optional<List<Rota>> rotasOpt = rotaRepository.buscarCaronas(saida,destino);
-        List<Rota> rotas = new ArrayList<>();
-        Optional<List<Carona>> caronasOpt = Optional.empty();
-        List<Carona> caronas = new ArrayList<>();
-        if(!rotasOpt.isEmpty()){
-            rotas = rotasOpt.get();
-        }
-            if(!rotas.isEmpty()){
-            for (Rota rota : rotas) {
-            caronasOpt = caronaRepository.findByRota(rota);
-            if (caronasOpt.isPresent()) {
-                caronas.addAll(caronasOpt.get());
-            }
-            }
-        
+        List<Carona> caronas = caronaRepository.buscarCaronas(saida, destino, buscaDto.getData());
             for (Carona carona : caronas) {
                 BuscaRetornaDto buscaRetornoDto = new BuscaRetornaDto();
                 Point destino02 = carona.getRota().getDestino();
@@ -74,7 +58,6 @@ public class ReservaService {
                 buscaRetornoDto.setHora(carona.getHora());
                 buscasRetornosDto.add(buscaRetornoDto);
             }
-    }
         return buscasRetornosDto;
     }
 }

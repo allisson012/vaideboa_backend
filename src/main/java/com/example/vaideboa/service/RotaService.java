@@ -2,12 +2,18 @@ package com.example.vaideboa.service;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import com.example.vaideboa.model.Rota;
+import com.example.vaideboa.repository.RotaRepository;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -22,6 +28,13 @@ public class RotaService {
 
     @Value("${api.key}")
     private String apiKey;
+    private final RotaMapperService rotaMapperService;
+    private final RotaRepository rotaRepository;
+
+    public RotaService(RotaMapperService rotaMapperService, RotaRepository rotaRepository) {
+        this.rotaMapperService = rotaMapperService;
+        this.rotaRepository = rotaRepository;
+    }
 
     public String getRota(Point saida, Point destino) {
 
@@ -85,6 +98,17 @@ public class RotaService {
 
         return kmsFormatado;
     }   
+
+    public LineString salvarRota(Point saida, Point destino){
+        String resposta = getRota(saida, destino);
+        return rotaMapperService.extrairLineString(resposta);
+    }
+
+    public List<Map<String, Double>> retornarParaFront(Long id){
+        Optional<Rota> rotaOpt = rotaRepository.findById(id);
+        Rota rota = rotaOpt.get();
+        return rotaMapperService.toReactNative(rota.getTrajeto());
+    }
 
 }
 

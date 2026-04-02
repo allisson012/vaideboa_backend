@@ -1,6 +1,8 @@
 package com.example.vaideboa.model;
 
 import java.util.List;
+
+import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 
 import jakarta.persistence.Column;
@@ -33,4 +35,10 @@ public class Rota {
     @OneToMany(mappedBy = "rota")
     @JsonIgnore
     private List<RotaPoint> rota_points;
+    @Column(columnDefinition = "geometry(LineString,4326)")
+    private LineString trajeto;
+    // @Column(columnDefinition = "jsonb")
+    // private String geojson;
+    private Double distancia;
+    private Double duracao;
 }

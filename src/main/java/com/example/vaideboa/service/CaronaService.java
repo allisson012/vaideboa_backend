@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 
@@ -20,17 +21,17 @@ import com.example.vaideboa.repository.UserRepository;
 public class CaronaService {
     private final CaronaRepository caronaRepository;
     private final RotaRepository rotaRepository;
-    private final UserRepository userRepository;
+    private final UserRepository userRepository; 
+    private final RotaService rotaService;
     private final GeometryFactory geometryFactory = new GeometryFactory();
     
-    
     public CaronaService(CaronaRepository caronaRepository, RotaRepository rotaRepository,
-            UserRepository userRepository) {
-        this.caronaRepository = caronaRepository;
-        this.rotaRepository = rotaRepository;
-        this.userRepository = userRepository;
+        UserRepository userRepository, RotaService rotaService) {
+      this.caronaRepository = caronaRepository;
+      this.rotaRepository = rotaRepository;
+      this.userRepository = userRepository;
+      this.rotaService = rotaService;
     }
-
 
     public boolean cadastrarCarona(CaronaDto caronaDto , String username){
       Optional<User> userOpt = userRepository.findByUsername(username);
@@ -48,6 +49,10 @@ public class CaronaService {
       );
       rota.setSaida(saida);
       rota.setDestino(destino);
+      // String geojson = rotaService.getRota(saida, destino);
+      // rota.setGeojson(geojson);
+      LineString trajeto = rotaService.salvarRota(saida, destino);
+      rota.setTrajeto(trajeto);
       Rota rotaSalva = rotaRepository.save(rota);
       if(rotaSalva == null)
       {
