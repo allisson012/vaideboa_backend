@@ -50,7 +50,6 @@ public class CaronaService {
       );
       rota.setSaida(saida);
       rota.setDestino(destino);
-      
       String geojson = rotaService.getRota(saida, destino);
       LineString trajeto = rotaService.salvarRota(geojson);
       rota.setTrajeto(trajeto);

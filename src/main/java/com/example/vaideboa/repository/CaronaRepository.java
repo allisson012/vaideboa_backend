@@ -38,4 +38,27 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
         @Param("destino") Point destino,
         @Param("data") LocalDate data
     );
+
+    // Buscar caronas em todo o trajeto
+    @Query(value = """
+    SELECT c.*
+    FROM carona c
+    JOIN rota r ON r.id = c.rota_id
+    WHERE ST_DWithin(
+        r.trajeto::geography,
+        ST_SetSRID(:saida, 4326)::geography,
+        10000
+    )
+    AND ST_DWithin(
+        r.trajeto::geography,
+        ST_SetSRID(:destino, 4326)::geography,
+        10000
+    )
+    AND c.data = :data
+    """, nativeQuery = true)
+    List<Carona> buscarCaronasTodoTrajeto(
+        @Param("saida") Point saida,
+        @Param("destino") Point destino,
+        @Param("data") LocalDate data
+    );
 }

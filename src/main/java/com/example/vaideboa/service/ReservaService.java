@@ -37,7 +37,8 @@ public class ReservaService {
         new Coordinate(buscaDto.getDestinoLon(), buscaDto.getDestinoLat())
       );
         List<BuscaRetornaDto> buscasRetornosDto = new ArrayList<>();
-        List<Carona> caronas = caronaRepository.buscarCaronas(saida, destino, buscaDto.getData());
+        List<Carona> caronas = caronaRepository.buscarCaronasTodoTrajeto(saida, destino, buscaDto.getData());
+        // buscar na api as distancia das caronas para ver se da 10 km mesmo
             for (Carona carona : caronas) {
                 BuscaRetornaDto buscaRetornoDto = new BuscaRetornaDto();
                 Point destino02 = carona.getRota().getDestino();
