@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.example.vaideboa.Dtos.RotaInfoDto;
 import com.example.vaideboa.model.Rota;
 import com.example.vaideboa.repository.RotaRepository;
 
@@ -97,11 +98,29 @@ public class RotaService {
         String kmsFormatado = String.format("%.2f", distancia / 1000.0).replace(".", ",");
 
         return kmsFormatado;
-    }   
+    } 
+    
+    public RotaInfoDto extrairInfoRota(String geojson){
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode root = mapper.readTree(geojson);
 
-    public LineString salvarRota(Point saida, Point destino){
-        String resposta = getRota(saida, destino);
-        return rotaMapperService.extrairLineString(resposta);
+    JsonNode segment = root
+            .path("features").get(0)
+            .path("properties")
+            .path("segments").get(0);
+
+    double distanciaMetros = segment.path("distance").asDouble();
+    double duracaoSegundos = segment.path("duration").asDouble();
+
+    double distanciaKm = Math.round((distanciaMetros / 1000.0) * 100.0) / 100.0;
+    double duracaoMin = Math.round((duracaoSegundos / 60.0) * 100.0) / 100.0;
+
+    return new RotaInfoDto(distanciaKm, duracaoMin);
+    
+    }
+
+    public LineString salvarRota(String geojson){
+        return rotaMapperService.extrairLineString(geojson);
     }
 
     public List<Map<String, Double>> retornarParaFront(Long id){

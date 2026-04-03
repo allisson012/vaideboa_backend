@@ -12,6 +12,7 @@ import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 
 import com.example.vaideboa.Dtos.CaronaDto;
+import com.example.vaideboa.Dtos.RotaInfoDto;
 import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.Rota;
 import com.example.vaideboa.model.User;
@@ -49,10 +50,13 @@ public class CaronaService {
       );
       rota.setSaida(saida);
       rota.setDestino(destino);
-      // String geojson = rotaService.getRota(saida, destino);
-      // rota.setGeojson(geojson);
-      LineString trajeto = rotaService.salvarRota(saida, destino);
+      
+      String geojson = rotaService.getRota(saida, destino);
+      LineString trajeto = rotaService.salvarRota(geojson);
       rota.setTrajeto(trajeto);
+      RotaInfoDto rotaInfoDto = rotaService.extrairInfoRota(geojson);
+      rota.setDistancia(rotaInfoDto.getDistanciaKm());
+      rota.setDuracao(rotaInfoDto.getDuracaoMin());
       Rota rotaSalva = rotaRepository.save(rota);
       if(rotaSalva == null)
       {
