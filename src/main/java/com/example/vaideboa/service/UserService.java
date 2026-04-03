@@ -55,8 +55,8 @@ public class UserService {
         return false;
     }
 
-    public UserRetornoDto buscarUserPorId(String username){
-        Optional<User> userOpt = userRepository.findByUsername(username);
+    public UserRetornoDto buscarUserPorUsername(String username){
+        Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
         if(userOpt.isEmpty()){
             throw new RuntimeException("Usuário não encontrado");
         }
@@ -73,5 +73,16 @@ public class UserService {
         );
         UserRetornoDto userRetornoDto = new UserRetornoDto(user.getNome(), user.getUsername(), user.getCpf(), user.getTelefone(), dataNascimento, user.getGenero().getDescricao(), preferenciasDto);
         return userRetornoDto;
+    }
+
+    public boolean excluirUsuario (String username){
+        Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
+        if(userOpt.isEmpty()){
+            return false;
+        }
+        User user = userOpt.get();
+        user.setAtivo(false);
+        userRepository.save(user);
+        return true;
     }
 }

@@ -28,7 +28,7 @@ public class PedidoService {
     }
 
     public ApiResponse agendarCarona(AgendarCaronaDto agendarCaronaDto , String username){
-      Optional<User> userOpt = userRepository.findByUsername(username);
+      Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
       if(userOpt.isEmpty()){
         return new ApiResponse(false, "Usuário não encontrado");
       }

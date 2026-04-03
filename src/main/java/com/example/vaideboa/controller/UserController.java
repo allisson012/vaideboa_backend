@@ -3,6 +3,7 @@ package com.example.vaideboa.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,7 +38,17 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<UserRetornoDto> buscarUser(Authentication authentication){
     String username = authentication.getName();
-    return ResponseEntity.ok(userService.buscarUserPorId(username));
-}
+    return ResponseEntity.ok(userService.buscarUserPorUsername(username));
+    }
+
+    @DeleteMapping("/excluir")
+    public ResponseEntity<?> excluirUsuario(Authentication auth){
+        String username = auth.getName();
+        boolean retorno = userService.excluirUsuario(username);
+        if(retorno == false){
+            return ResponseEntity.badRequest().body("Erro ao excluir usuário");
+        }
+        return ResponseEntity.ok("Usuário deletado com sucesso");
+    }
 
 }
