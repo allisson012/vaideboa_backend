@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Endereco {
+    // ideia do endereço é ser para salvar a casa do passageiro
     private String estado;
     private String cidade;
     private String bairro;

@@ -1,5 +1,6 @@
 package com.example.vaideboa.service;
 
+import com.example.vaideboa.repository.ReservaRepository;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -8,6 +9,7 @@ import com.example.vaideboa.Dtos.AgendarCaronaDto;
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.PedidoCarona;
+import com.example.vaideboa.model.Reserva;
 import com.example.vaideboa.model.User;
 import com.example.vaideboa.model.enums.StatusPedido;
 import com.example.vaideboa.repository.CaronaRepository;
@@ -16,15 +18,17 @@ import com.example.vaideboa.repository.UserRepository;
 
 @Service
 public class PedidoService {
+    private final ReservaRepository reservaRepository;
     private final UserRepository userRepository;
     private final CaronaRepository caronaRepository;
     private final PedidoCaronaRepository pedidoCaronaRepository;
     
     public PedidoService(UserRepository userRepository, CaronaRepository caronaRepository,
-            PedidoCaronaRepository pedidoCaronaRepository) {
+            PedidoCaronaRepository pedidoCaronaRepository, ReservaRepository reservaRepository) {
         this.userRepository = userRepository;
         this.caronaRepository = caronaRepository;
         this.pedidoCaronaRepository = pedidoCaronaRepository;
+        this.reservaRepository = reservaRepository;
     }
 
     public ApiResponse agendarCarona(AgendarCaronaDto agendarCaronaDto , String username){
@@ -55,5 +59,32 @@ public class PedidoService {
       pedidoCaronaRepository.save(pedidoCarona);
 
       return new ApiResponse(true, "Pedido agendado com sucesso");
+    }
+
+    public ApiResponse aceitarPedidoCarona(Long id, String username){
+      Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
+      if(userOpt.isEmpty()){
+        return new ApiResponse(false, "Usuário não encontrado ou inativo");
+      }
+      User user = userOpt.get();
+      Optional<PedidoCarona> pedidoCaronaOpt = pedidoCaronaRepository.findById(id);
+      if(pedidoCaronaOpt.isEmpty()){
+        return new ApiResponse(false, "Pedido de carona não encontrado");
+      }
+      PedidoCarona pedidoCarona = pedidoCaronaOpt.get();
+      if(!pedidoCarona.getCarona().getMotorista().equals(user)){
+        return new ApiResponse(false, "Apenas o motorista da carona pode aceitar pedidos");
+      }
+      if(pedidoCarona.getStatus() != StatusPedido.PENDENTE){
+        return new ApiResponse(false, "Pedido não pode mais ser alterado");
+      }
+      pedidoCarona.setStatus(StatusPedido.ACEITO);
+      Reserva reserva = new Reserva();
+      reserva.setCarona(pedidoCarona.getCarona());
+      reserva.setPassageiro(pedidoCarona.getPassageiro());
+      reserva.setAprovado(true); // como ainda não tem pagamento estou deixando ele aprovado
+      reservaRepository.save(reserva);
+      pedidoCaronaRepository.save(pedidoCarona);
+      return new ApiResponse(true, "Pedido aceito com sucesso");
     }
 }

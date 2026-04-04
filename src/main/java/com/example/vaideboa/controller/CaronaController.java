@@ -30,4 +30,6 @@ public class CaronaController {
         }
         return ResponseEntity.ok("Carona criada com sucesso");
     }
+
+    
 }
