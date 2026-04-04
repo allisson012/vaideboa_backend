@@ -57,4 +57,6 @@ public class User {
     @JsonIgnore
     @OneToOne(cascade = CascadeType.ALL)
     private Preferencias preferencia;
+    @OneToMany(mappedBy = "dono")
+    private List<Carro> meusCarros;
 }
