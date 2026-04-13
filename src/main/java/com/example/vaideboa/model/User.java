@@ -46,9 +46,15 @@ public class User {
     // private boolean validacao -> não sei ainda como vai funcionar a validação
     @Enumerated(EnumType.STRING)
     private Generos genero;
+    // @JsonIgnore
+    // @OneToMany(mappedBy = "user")
+    // private List<Avaliacao> avaliacoes;
     @JsonIgnore
-    @OneToMany(mappedBy = "user")
-    private List<Avaliacao> avaliacoes;
+    @OneToMany(mappedBy = "avaliador")
+    private List<Avaliacao> avaliacoesFeitas;
+    @JsonIgnore
+    @OneToMany(mappedBy = "avaliado")
+    private List<Avaliacao> avaliacoesRecebidas;
     @JsonIgnore
     @OneToMany(mappedBy = "motorista")
     private List<Carona> minhasCaronas;
