@@ -83,69 +83,86 @@ public class CaronaService {
     public ApiResponse finalizarCorrida(Long idCarona, String username){
       Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
       if(userOpt.isEmpty()){
-        return new ApiResponse(false, "Usuário não encontrado");
+        return new ApiResponse(false, "Usuário não encontrado", null);
       }
       Optional<Carona> caronaOpt = caronaRepository.findById(idCarona);
       if(caronaOpt.isEmpty()){
-        return new ApiResponse(false, "Carona não encontrada");
+        return new ApiResponse(false, "Carona não encontrada", null);
       }
       Carona carona = caronaOpt.get();
       User user = userOpt.get();
       if(carona.isRealizado()){
-        return new ApiResponse(false, "Carona já realizada");
+        return new ApiResponse(false, "Carona já realizada", null);
       }
       if(!carona.getMotorista().equals(user)){
-        return new ApiResponse(false,"Usuário não tem acesso a carona pois não é o motorista");
+        return new ApiResponse(false,"Usuário não tem acesso a carona pois não é o motorista", null);
       }
       carona.setRealizado(true);
       boolean sucesso = avaliacaoService.criarAvaliacoes(carona);
       if(!sucesso){
-          return new ApiResponse(false, "Erro ao criar avaliações");
+          return new ApiResponse(false, "Erro ao criar avaliações", null);
       }
       caronaRepository.save(carona); 
-      return new ApiResponse(true, "Carona finalizada com sucesso");
+      return new ApiResponse(true, "Carona finalizada com sucesso", null);
     }
 
-    public List<ViagemRealizadaDTO> minhasViagens(String username) {
+    public ApiResponse minhasViagens(String username) {
     Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
     if (userOpt.isEmpty()) {
-      return new ArrayList<>();
+        return new ApiResponse(false, "Usuário não encontrado", null);
     }
+
     User user = userOpt.get();
     List<ViagemRealizadaDTO> resultado = new ArrayList<>();
+
     for (Carona c : user.getMinhasCaronas()) {
-      Point origem = c.getRota().getSaida();
-      Point destino = c.getRota().getDestino();
-      resultado.add(new ViagemRealizadaDTO(
-        c.getId(),
-        origem.getY(), 
-        origem.getX(), 
-        destino.getY(),
-        destino.getX(),
-        c.getData(),
-        c.getHora(),
-        "MOTORISTA"
-      ));
+
+        if (c.getRota() == null) continue;
+
+        Point origem = c.getRota().getSaida();
+        Point destino = c.getRota().getDestino();
+
+        boolean realizada = c.isRealizado();
+
+        resultado.add(new ViagemRealizadaDTO(
+                c.getId(),
+                origem.getY(),
+                origem.getX(),
+                destino.getY(),
+                destino.getX(),
+                c.getData(),
+                c.getHora(),
+                "MOTORISTA",
+                realizada
+        ));
     }
     for (Reserva r : user.getMinhasReservas()) {
-      Carona c = r.getCarona();
-      Point origem = c.getRota().getSaida();
-      Point destino = c.getRota().getDestino();
-      resultado.add(new ViagemRealizadaDTO(
-        c.getId(),
-        origem.getY(),
-        origem.getX(),
-        destino.getY(),
-        destino.getX(),
-        c.getData(),
-        c.getHora(),
-        "PASSAGEIRO"
-      ));
+
+        Carona c = r.getCarona();
+
+        if (c == null || c.getRota() == null) continue;
+
+        Point origem = c.getRota().getSaida();
+        Point destino = c.getRota().getDestino();
+
+        boolean realizada = c.isRealizado();
+
+        resultado.add(new ViagemRealizadaDTO(
+                c.getId(),
+                origem.getY(),
+                origem.getX(),
+                destino.getY(),
+                destino.getX(),
+                c.getData(),
+                c.getHora(),
+                "PASSAGEIRO",
+                realizada
+        ));
     }
     resultado.sort(Comparator
-      .comparing(ViagemRealizadaDTO::getData)
-      .thenComparing(ViagemRealizadaDTO::getHora));
-    return resultado;
-  }
+            .comparing(ViagemRealizadaDTO::getData)
+            .thenComparing(ViagemRealizadaDTO::getHora));
 
+    return new ApiResponse(true, "Viagens encontradas com sucesso", resultado);
+}
 }

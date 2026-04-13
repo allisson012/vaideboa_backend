@@ -12,9 +12,10 @@ public class ViagemRealizadaDTO {
     private LocalDate data;
     private LocalTime hora;
     private String papel;
+    private boolean realizada;
 
     public ViagemRealizadaDTO(Long id, double origemLat, double origemLng, double destinoLat, double destinoLng, 
-            LocalDate data, LocalTime hora, String papel) {
+            LocalDate data, LocalTime hora, String papel, boolean realizada) {
         this.id = id;
         this.origemLat = origemLat;
         this.origemLng = origemLng;
@@ -23,6 +24,7 @@ public class ViagemRealizadaDTO {
         this.data = data;
         this.hora = hora;
         this.papel = papel;
+        this.realizada = realizada;
     }
 
     public Long getId() {
@@ -48,5 +50,8 @@ public class ViagemRealizadaDTO {
     }
     public String getPapel() {
         return papel;
+    }
+    public boolean isRealizada() { 
+        return realizada; 
     }
 }
