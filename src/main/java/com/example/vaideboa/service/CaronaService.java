@@ -3,6 +3,9 @@ package com.example.vaideboa.service;
 import com.example.vaideboa.repository.CaronaRepository;
 import com.example.vaideboa.repository.RotaRepository;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 import org.locationtech.jts.geom.Coordinate;
@@ -14,7 +17,9 @@ import org.springframework.stereotype.Service;
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.CaronaDto;
 import com.example.vaideboa.Dtos.RotaInfoDto;
+import com.example.vaideboa.Dtos.ViagemRealizadaDTO;
 import com.example.vaideboa.model.Carona;
+import com.example.vaideboa.model.Reserva;
 import com.example.vaideboa.model.Rota;
 import com.example.vaideboa.model.User;
 import com.example.vaideboa.repository.UserRepository;
@@ -100,4 +105,47 @@ public class CaronaService {
       caronaRepository.save(carona); 
       return new ApiResponse(true, "Carona finalizada com sucesso");
     }
+
+    public List<ViagemRealizadaDTO> minhasViagens(String username) {
+    Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
+    if (userOpt.isEmpty()) {
+      return new ArrayList<>();
+    }
+    User user = userOpt.get();
+    List<ViagemRealizadaDTO> resultado = new ArrayList<>();
+    for (Carona c : user.getMinhasCaronas()) {
+      Point origem = c.getRota().getSaida();
+      Point destino = c.getRota().getDestino();
+      resultado.add(new ViagemRealizadaDTO(
+        c.getId(),
+        origem.getY(), 
+        origem.getX(), 
+        destino.getY(),
+        destino.getX(),
+        c.getData(),
+        c.getHora(),
+        "MOTORISTA"
+      ));
+    }
+    for (Reserva r : user.getMinhasReservas()) {
+      Carona c = r.getCarona();
+      Point origem = c.getRota().getSaida();
+      Point destino = c.getRota().getDestino();
+      resultado.add(new ViagemRealizadaDTO(
+        c.getId(),
+        origem.getY(),
+        origem.getX(),
+        destino.getY(),
+        destino.getX(),
+        c.getData(),
+        c.getHora(),
+        "PASSAGEIRO"
+      ));
+    }
+    resultado.sort(Comparator
+      .comparing(ViagemRealizadaDTO::getData)
+      .thenComparing(ViagemRealizadaDTO::getHora));
+    return resultado;
+  }
+
 }
