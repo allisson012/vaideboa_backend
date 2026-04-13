@@ -39,7 +39,11 @@ public class CaronaController {
     @GetMapping("/minhas")
     public ResponseEntity<?> minhasViagens(Authentication auth) {
         String username = auth.getName();
-        return ResponseEntity.ok(caronaService.minhasViagens(username));
+        ApiResponse response = caronaService.minhasViagens(username);
+        if (!response.isRetorno()) {
+        return ResponseEntity.badRequest().body(response.getMensagem());
+        }
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/finalizar/{idCarona}")
