@@ -38,7 +38,8 @@ public class Avaliacao {
     private Reserva reserva;
 
     // definir o papel do user nessa avaliação ex motorista ou passageiro
-    private Integer nota; // 4.5 1.0 null
+
+    private Double nota; // 4.5 1.0 null
     private String comentario;
     @Enumerated(EnumType.STRING)
     private TipoAvaliacao tipo;
