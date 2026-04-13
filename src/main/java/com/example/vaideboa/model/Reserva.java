@@ -1,5 +1,7 @@
 package com.example.vaideboa.model;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
@@ -32,6 +34,9 @@ public class Reserva {
     @JoinColumn(name = "carona_id")
     private Carona carona;
     private boolean aprovado; // aprovado o pagamento
+    @JsonIgnore
+    @OneToMany(mappedBy = "reserva")
+    private List<Avaliacao> avaliacoes;
     // pagamento
    
 }

@@ -33,9 +33,6 @@ public class Carona {
    private LocalDate data;
    private LocalTime hora;
    @JsonIgnore
-   @OneToMany(mappedBy = "carona")
-   private List<Avaliacao> avaliacoes;
-   @JsonIgnore
    @ManyToOne
    @JoinColumn(name = "user_id")
    private User motorista; // criador da carona
@@ -44,5 +41,8 @@ public class Carona {
    @JoinColumn(name = "rota_id")
    @JsonIgnore
    private Rota rota;
-   private boolean realizado; // carona ja foi realizada 
+   private boolean realizado; // carona ja foi realizada
+   @JsonIgnore
+   @OneToMany(mappedBy = "carona")
+   private List<Reserva> reservas; 
 }

@@ -1,8 +1,11 @@
 package com.example.vaideboa.model;
 
+import com.example.vaideboa.model.enums.TipoAvaliacao;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -23,14 +26,21 @@ public class Avaliacao {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "avaliador_id")
     @JsonIgnore
-    private User user;
+    private User avaliador;
     @ManyToOne
-    @JoinColumn(name = "carona_id")
+    @JoinColumn(name = "avaliado_id")
     @JsonIgnore
-    private Carona carona; 
+    private User avaliado;
+    
+    @ManyToOne
+    private Reserva reserva;
+
     // definir o papel do user nessa avaliação ex motorista ou passageiro
-    private int estrela; // 4.5 1.0
-    private String mensagem;
+
+    private Double nota; // 4.5 1.0 null
+    private String comentario;
+    @Enumerated(EnumType.STRING)
+    private TipoAvaliacao tipo;
 }

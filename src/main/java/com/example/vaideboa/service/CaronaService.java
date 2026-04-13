@@ -14,6 +14,7 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 
+import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.CaronaDto;
 import com.example.vaideboa.Dtos.RotaInfoDto;
 import com.example.vaideboa.Dtos.ViagemRealizadaDTO;
@@ -29,14 +30,17 @@ public class CaronaService {
     private final RotaRepository rotaRepository;
     private final UserRepository userRepository; 
     private final RotaService rotaService;
+    private final AvaliacaoService avaliacaoService;
     private final GeometryFactory geometryFactory = new GeometryFactory();
     
+
     public CaronaService(CaronaRepository caronaRepository, RotaRepository rotaRepository,
-        UserRepository userRepository, RotaService rotaService) {
-      this.caronaRepository = caronaRepository;
-      this.rotaRepository = rotaRepository;
-      this.userRepository = userRepository;
-      this.rotaService = rotaService;
+            UserRepository userRepository, RotaService rotaService, AvaliacaoService avaliacaoService) {
+        this.caronaRepository = caronaRepository;
+        this.rotaRepository = rotaRepository;
+        this.userRepository = userRepository;
+        this.rotaService = rotaService;
+        this.avaliacaoService = avaliacaoService;
     }
 
     public boolean cadastrarCarona(CaronaDto caronaDto , String username){
@@ -74,6 +78,32 @@ public class CaronaService {
       carona.setRota(rotaSalva);
       caronaRepository.save(carona);
       return true;
+    }
+
+    public ApiResponse finalizarCorrida(Long idCarona, String username){
+      Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
+      if(userOpt.isEmpty()){
+        return new ApiResponse(false, "Usuário não encontrado");
+      }
+      Optional<Carona> caronaOpt = caronaRepository.findById(idCarona);
+      if(caronaOpt.isEmpty()){
+        return new ApiResponse(false, "Carona não encontrada");
+      }
+      Carona carona = caronaOpt.get();
+      User user = userOpt.get();
+      if(carona.isRealizado()){
+        return new ApiResponse(false, "Carona já realizada");
+      }
+      if(!carona.getMotorista().equals(user)){
+        return new ApiResponse(false,"Usuário não tem acesso a carona pois não é o motorista");
+      }
+      carona.setRealizado(true);
+      boolean sucesso = avaliacaoService.criarAvaliacoes(carona);
+      if(!sucesso){
+          return new ApiResponse(false, "Erro ao criar avaliações");
+      }
+      caronaRepository.save(carona); 
+      return new ApiResponse(true, "Carona finalizada com sucesso");
     }
 
     public List<ViagemRealizadaDTO> minhasViagens(String username) {
@@ -117,4 +147,5 @@ public class CaronaService {
       .thenComparing(ViagemRealizadaDTO::getHora));
     return resultado;
   }
+
 }
