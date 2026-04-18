@@ -30,8 +30,10 @@ public class Rota {
     private Carona carona;
     @Column(columnDefinition = "geometry(Point,4326)")
     private Point saida;
+    private String saidaTexto;
     @Column(columnDefinition = "geometry(Point,4326)")
     private Point destino;
+    private String destinoTexto;
     @OneToMany(mappedBy = "rota")
     @JsonIgnore
     private List<RotaPoint> rota_points;
@@ -41,4 +43,5 @@ public class Rota {
     // private String geojson;
     private Double distancia;
     private Double duracao;
+    // salvar cidade estado rua 
 }

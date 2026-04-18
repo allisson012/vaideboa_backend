@@ -33,16 +33,18 @@ public class CaronaService {
     private final UserRepository userRepository; 
     private final RotaService rotaService;
     private final AvaliacaoService avaliacaoService;
+    private final GeoService geoService;
     private final GeometryFactory geometryFactory = new GeometryFactory();
-    
 
     public CaronaService(CaronaRepository caronaRepository, RotaRepository rotaRepository,
-            UserRepository userRepository, RotaService rotaService, AvaliacaoService avaliacaoService) {
+            UserRepository userRepository, RotaService rotaService, AvaliacaoService avaliacaoService,
+            GeoService geoService) {
         this.caronaRepository = caronaRepository;
         this.rotaRepository = rotaRepository;
         this.userRepository = userRepository;
         this.rotaService = rotaService;
         this.avaliacaoService = avaliacaoService;
+        this.geoService = geoService;
     }
 
     public boolean cadastrarCarona(CaronaDto caronaDto , String username){
@@ -67,6 +69,8 @@ public class CaronaService {
       RotaInfoDto rotaInfoDto = rotaService.extrairInfoRota(geojson);
       rota.setDistancia(rotaInfoDto.getDistanciaKm());
       rota.setDuracao(rotaInfoDto.getDuracaoMin());
+      rota.setSaidaTexto(geoService.reverseGeocode(saida.getY(), saida.getX()));
+      rota.setDestinoTexto(geoService.reverseGeocode(destino.getY(), destino.getX()));
       Rota rotaSalva = rotaRepository.save(rota);
       if(rotaSalva == null)
       {

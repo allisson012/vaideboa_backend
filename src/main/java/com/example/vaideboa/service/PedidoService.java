@@ -1,12 +1,18 @@
 package com.example.vaideboa.service;
 
+import com.example.vaideboa.controller.PedidoController;
 import com.example.vaideboa.repository.ReservaRepository;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import com.example.vaideboa.Dtos.AgendarCaronaDto;
 import com.example.vaideboa.Dtos.ApiResponse;
+import com.example.vaideboa.Dtos.PedidoCaronaRetornoDto;
 import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.PedidoCarona;
 import com.example.vaideboa.model.Reserva;
@@ -18,6 +24,7 @@ import com.example.vaideboa.repository.UserRepository;
 
 @Service
 public class PedidoService {
+
     private final ReservaRepository reservaRepository;
     private final UserRepository userRepository;
     private final CaronaRepository caronaRepository;
@@ -83,8 +90,47 @@ public class PedidoService {
       reserva.setCarona(pedidoCarona.getCarona());
       reserva.setPassageiro(pedidoCarona.getPassageiro());
       reserva.setAprovado(true); // como ainda não tem pagamento estou deixando ele aprovado
+      // tenho que tirar um na vagas disponiveis da Carona
       reservaRepository.save(reserva);
       pedidoCaronaRepository.save(pedidoCarona);
       return new ApiResponse(true, "Pedido aceito com sucesso");
+    }
+
+    public ApiResponse buscarPedidos(String username){
+      Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
+      if(userOpt.isEmpty()){
+        return new ApiResponse(false, "Usuário não encontrado");
+      }
+      User user = userOpt.get();
+      LocalDate data = LocalDate.now(); // data de hoje 
+      List<Carona> caronas = caronaRepository.findByMotoristaAndDataGreaterThanEqual(user,data);
+      List<PedidoCarona> pedidosCarona = new ArrayList<>();
+      for (Carona carona : caronas) {
+        List<PedidoCarona> pedidos = pedidoCaronaRepository.findByCaronaAndStatus(carona, StatusPedido.PENDENTE);
+
+        pedidosCarona.addAll(pedidos);
+      }
+      List<PedidoCaronaRetornoDto> dtos = new ArrayList<>();
+      for (PedidoCarona pedidoCarona : pedidosCarona) {
+        PedidoCaronaRetornoDto dto = new PedidoCaronaRetornoDto();
+        dto.setNome(pedidoCarona.getPassageiro().getNome());
+        dto.setData(pedidoCarona.getCarona().getData().toString());
+        dto.setGenero(pedidoCarona.getPassageiro().getGenero().getDescricao());
+        dto.setDistancia(pedidoCarona.getCarona().getRota().getDistancia());
+        dto.setDuracao(pedidoCarona.getCarona().getRota().getDuracao());
+        dto.setIdPedidoCarona(pedidoCarona.getId());
+        dto.setVagasDisponiveis(pedidoCarona.getCarona().getVagasDisponiveis());
+        dto.setLatSaida(pedidoCarona.getCarona().getRota().getSaida().getY());
+        dto.setLonSaida(pedidoCarona.getCarona().getRota().getSaida().getX());
+        dto.setSaidaTexto(pedidoCarona.getCarona().getRota().getSaidaTexto());
+
+        dto.setLatDestino(pedidoCarona.getCarona().getRota().getDestino().getY());
+        dto.setLonDestino(pedidoCarona.getCarona().getRota().getDestino().getX());
+        dto.setDestinoTexto(pedidoCarona.getCarona().getRota().getDestinoTexto());
+
+        dtos.add(dto);
+      }
+      
+      return new ApiResponse(true, "Pedidos pegos com sucesso", dtos);
     }
 }

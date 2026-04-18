@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.Rota;
+import com.example.vaideboa.model.User;
 
 @Repository
 public interface CaronaRepository extends JpaRepository<Carona,Long>{
@@ -61,4 +62,6 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
         @Param("destino") Point destino,
         @Param("data") LocalDate data
     );
+
+    List<Carona> findByMotoristaAndDataGreaterThanEqual(User motorista, LocalDate data);
 }

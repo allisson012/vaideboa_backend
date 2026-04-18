@@ -2,6 +2,7 @@ package com.example.vaideboa.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,5 +41,15 @@ public class PedidoController {
             return ResponseEntity.badRequest().body(resposta.getMensagem());
         }
         return ResponseEntity.ok(resposta.getMensagem());
+    }
+
+    @GetMapping("/buscar")
+    public ResponseEntity<?> buscarPedidoCarona(Authentication auth){
+        String username = auth.getName();
+        ApiResponse resposta = pedidoService.buscarPedidos(username);
+        if(!resposta.isRetorno()){
+            return ResponseEntity.badRequest().body(resposta.getMensagem());
+        }
+        return ResponseEntity.ok(resposta.getDados());
     }
 }
