@@ -1,5 +1,7 @@
 package com.example.vaideboa.controller;
 
+import java.util.Optional;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.CaronaDto;
+import com.example.vaideboa.model.User;
+import com.example.vaideboa.repository.UserRepository;
 import com.example.vaideboa.service.CaronaService;
 
 
@@ -19,9 +23,11 @@ import com.example.vaideboa.service.CaronaService;
 @RequestMapping("/carona")
 public class CaronaController {
     private final CaronaService caronaService;
-    
-    public CaronaController(CaronaService caronaService) {
+    private final UserRepository userRepository;
+
+    public CaronaController(CaronaService caronaService, UserRepository userRepository) {
         this.caronaService = caronaService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/cadastrar")
@@ -54,6 +60,13 @@ public class CaronaController {
         return ResponseEntity.badRequest().body(retorno.getMensagem());
      }
      return ResponseEntity.ok(retorno.getMensagem());
+    }
+
+    @GetMapping("/buscar/{idCarona}")
+    public ResponseEntity<?> buscarCaronaPeloId(@PathVariable Long idCarona, Authentication auth){
+        String username = auth.getName();
+        Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
+        return null;
     }
 
 }
