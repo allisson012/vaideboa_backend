@@ -24,11 +24,9 @@ import com.example.vaideboa.service.CaronaService;
 @RequestMapping("/carona")
 public class CaronaController {
     private final CaronaService caronaService;
-    private final UserRepository userRepository;
 
-    public CaronaController(CaronaService caronaService, UserRepository userRepository) {
+    public CaronaController(CaronaService caronaService) {
         this.caronaService = caronaService;
-        this.userRepository = userRepository;
     }
 
     @PostMapping("/cadastrar")
@@ -66,8 +64,11 @@ public class CaronaController {
     @GetMapping("/buscar/{idCarona}")
     public ResponseEntity<?> buscarCaronaPeloId(@PathVariable Long idCarona, Authentication auth){
         String username = auth.getName();
-        Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
-        return null;
+        ApiResponse resposta = caronaService.buscarCaronaPeloId(username, idCarona);
+        if(!resposta.isRetorno()){
+            return ResponseEntity.badRequest().body(resposta.getMensagem());
+        }
+        return ResponseEntity.ok(resposta.getDados());
     }
 
 }
