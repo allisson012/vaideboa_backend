@@ -7,8 +7,12 @@ public class PedidoCaronaRetornoDto {
     private Double avaliacao;
     // foto se tiver
     // quantidades de avaliações 
-    private Point origem; // enviar em formato de texto as informações 
-    private Point destino;
+    private double latSaida; // enviar em formato de texto as informações 
+    private double lonSaida;
+    private String saidaTexto;
+    private double latDestino;
+    private double lonDestino;
+    private String destinoTexto;
     private String data;
     private String hora;
     private int vagasDisponiveis;
@@ -17,6 +21,7 @@ public class PedidoCaronaRetornoDto {
     // preferencias do usuario
     private Double distancia;
     private Double duracao;
+    // carro
     public PedidoCaronaRetornoDto() {
     }
     public String getNome() {
@@ -31,17 +36,41 @@ public class PedidoCaronaRetornoDto {
     public void setAvaliacao(Double avaliacao) {
         this.avaliacao = avaliacao;
     }
-    public Point getOrigem() {
-        return origem;
+    public double getLatSaida() {
+        return latSaida;
     }
-    public void setOrigem(Point origem) {
-        this.origem = origem;
+    public void setLatSaida(double latSaida) {
+        this.latSaida = latSaida;
     }
-    public Point getDestino() {
-        return destino;
+    public double getLonSaida() {
+        return lonSaida;
     }
-    public void setDestino(Point destino) {
-        this.destino = destino;
+    public void setLonSaida(double lonSaida) {
+        this.lonSaida = lonSaida;
+    }
+    public String getSaidaTexto() {
+        return saidaTexto;
+    }
+    public void setSaidaTexto(String saidaTexto) {
+        this.saidaTexto = saidaTexto;
+    }
+    public double getLatDestino() {
+        return latDestino;
+    }
+    public void setLatDestino(double latDestino) {
+        this.latDestino = latDestino;
+    }
+    public double getLonDestino() {
+        return lonDestino;
+    }
+    public void setLonDestino(double lonDestino) {
+        this.lonDestino = lonDestino;
+    }
+    public String getDestinoTexto() {
+        return destinoTexto;
+    }
+    public void setDestinoTexto(String destinoTexto) {
+        this.destinoTexto = destinoTexto;
     }
     public String getData() {
         return data;
@@ -85,5 +114,6 @@ public class PedidoCaronaRetornoDto {
     public void setDuracao(Double duracao) {
         this.duracao = duracao;
     }
+    
     
 }

@@ -46,6 +46,10 @@ public class PedidoController {
     @GetMapping("/buscar")
     public ResponseEntity<?> buscarPedidoCarona(Authentication auth){
         String username = auth.getName();
-        return null;
+        ApiResponse resposta = pedidoService.buscarPedidos(username);
+        if(!resposta.isRetorno()){
+            return ResponseEntity.badRequest().body(resposta.getMensagem());
+        }
+        return ResponseEntity.ok(resposta.getDados());
     }
 }

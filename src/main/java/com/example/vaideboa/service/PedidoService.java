@@ -90,6 +90,7 @@ public class PedidoService {
       reserva.setCarona(pedidoCarona.getCarona());
       reserva.setPassageiro(pedidoCarona.getPassageiro());
       reserva.setAprovado(true); // como ainda não tem pagamento estou deixando ele aprovado
+      // tenho que tirar um na vagas disponiveis da Carona
       reservaRepository.save(reserva);
       pedidoCaronaRepository.save(pedidoCarona);
       return new ApiResponse(true, "Pedido aceito com sucesso");
@@ -109,9 +110,9 @@ public class PedidoService {
 
         pedidosCarona.addAll(pedidos);
       }
+      List<PedidoCaronaRetornoDto> dtos = new ArrayList<>();
       for (PedidoCarona pedidoCarona : pedidosCarona) {
         PedidoCaronaRetornoDto dto = new PedidoCaronaRetornoDto();
-        // dto.setAvaliacao(pedidoCarona.getPassageiro().get);
         dto.setNome(pedidoCarona.getPassageiro().getNome());
         dto.setData(pedidoCarona.getCarona().getData().toString());
         dto.setGenero(pedidoCarona.getPassageiro().getGenero().getDescricao());
@@ -119,9 +120,17 @@ public class PedidoService {
         dto.setDuracao(pedidoCarona.getCarona().getRota().getDuracao());
         dto.setIdPedidoCarona(pedidoCarona.getId());
         dto.setVagasDisponiveis(pedidoCarona.getCarona().getVagasDisponiveis());
-        
+        dto.setLatSaida(pedidoCarona.getCarona().getRota().getSaida().getY());
+        dto.setLonSaida(pedidoCarona.getCarona().getRota().getSaida().getX());
+        dto.setSaidaTexto(pedidoCarona.getCarona().getRota().getSaidaTexto());
+
+        dto.setLatDestino(pedidoCarona.getCarona().getRota().getDestino().getY());
+        dto.setLonDestino(pedidoCarona.getCarona().getRota().getDestino().getX());
+        dto.setDestinoTexto(pedidoCarona.getCarona().getRota().getDestinoTexto());
+
+        dtos.add(dto);
       }
       
-      return null;
+      return new ApiResponse(true, "Pedidos pegos com sucesso", dtos);
     }
 }

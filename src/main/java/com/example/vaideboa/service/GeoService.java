@@ -4,6 +4,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+
 @Service
 public class GeoService {
     @Value("${api.key}")
@@ -19,6 +22,19 @@ public class GeoService {
         RestTemplate restTemplate = new RestTemplate();
         String response = restTemplate.getForObject(url, String.class);
 
-        return response;
+        try {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(response);
+
+        return root
+            .path("features")
+            .get(0)
+            .path("properties")
+            .path("label")
+            .asText();
+
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
