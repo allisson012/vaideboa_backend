@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.vaideboa.Dtos.ApiResponse;
@@ -43,13 +44,13 @@ public class CaronaController {
     }
      
     @GetMapping("/minhas")
-    public ResponseEntity<?> minhasViagens(Authentication auth) {
+    public ResponseEntity<?> minhasViagens(Authentication auth, @RequestParam (required = false) String tipo) {
         String username = auth.getName();
-        ApiResponse response = caronaService.minhasViagens(username);
+        ApiResponse response = caronaService.minhasViagens(username, tipo);
         if (!response.isRetorno()) {
         return ResponseEntity.badRequest().body(response.getMensagem());
         }
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(response.getDados());
     }
 
     @GetMapping("/finalizar/{idCarona}")

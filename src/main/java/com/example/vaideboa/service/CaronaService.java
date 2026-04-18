@@ -5,8 +5,10 @@ import com.example.vaideboa.repository.RotaRepository;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -110,23 +112,29 @@ public class CaronaService {
       return new ApiResponse(true, "Carona finalizada com sucesso", null);
     }
 
-    public ApiResponse minhasViagens(String username) {
+    public ApiResponse minhasViagens(String username, String tipo) {
     Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
     if (userOpt.isEmpty()) {
         return new ApiResponse(false, "Usuário não encontrado", null);
     }
 
     User user = userOpt.get();
+    Set<Long> idsAdicionados = new HashSet<>();
     List<ViagemRealizadaDTO> resultado = new ArrayList<>();
+
+    String filtro = (tipo == null) ? "TODAS" : tipo.toUpperCase();
 
     for (Carona c : user.getMinhasCaronas()) {
 
         if (c.getRota() == null) continue;
 
+        boolean realizada = c.isRealizado();
+
+        if(filtro.equals("REALIZADAS") && !realizada) continue;
+        if(filtro.equals("AGENDADAS") && realizada) continue;
+
         Point origem = c.getRota().getSaida();
         Point destino = c.getRota().getDestino();
-
-        boolean realizada = c.isRealizado();
 
         resultado.add(new ViagemRealizadaDTO(
                 c.getId(),
@@ -139,6 +147,7 @@ public class CaronaService {
                 "MOTORISTA",
                 realizada
         ));
+        idsAdicionados.add(c.getId());
     }
     for (Reserva r : user.getMinhasReservas()) {
 
@@ -146,10 +155,13 @@ public class CaronaService {
 
         if (c == null || c.getRota() == null) continue;
 
+        boolean realizada = c.isRealizado();
+
+        if(filtro.equals("REALIZADAS") && !realizada) continue;
+        if(filtro.equals("AGENDADAS") && realizada) continue;
+
         Point origem = c.getRota().getSaida();
         Point destino = c.getRota().getDestino();
-
-        boolean realizada = c.isRealizado();
 
         resultado.add(new ViagemRealizadaDTO(
                 c.getId(),
@@ -162,6 +174,7 @@ public class CaronaService {
                 "PASSAGEIRO",
                 realizada
         ));
+        idsAdicionados.add(c.getId());
     }
     resultado.sort(Comparator
             .comparing(ViagemRealizadaDTO::getData)
