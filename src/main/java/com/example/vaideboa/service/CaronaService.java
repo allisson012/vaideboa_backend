@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.CaronaDto;
+import com.example.vaideboa.Dtos.CaronaRetornoDto;
 import com.example.vaideboa.Dtos.RotaInfoDto;
 import com.example.vaideboa.Dtos.ViagemRealizadaDTO;
 import com.example.vaideboa.model.Carona;
@@ -181,5 +182,35 @@ public class CaronaService {
             .thenComparing(ViagemRealizadaDTO::getHora));
 
     return new ApiResponse(true, "Viagens encontradas com sucesso", resultado);
-}
+  }
+
+  public ApiResponse buscarCaronaPeloId(String username , Long idCarona){
+    Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
+    if(userOpt.isEmpty()){
+      return new ApiResponse(false, "Usuário não encontrado");
+    }
+    User user = userOpt.get();
+    Optional<Carona> caronaOpt = caronaRepository.findById(idCarona);
+    if(caronaOpt.isEmpty()){
+      return new ApiResponse(false, "Carona não encontrada");
+    }
+    Carona carona = caronaOpt.get();
+    CaronaRetornoDto dto = new CaronaRetornoDto();
+    dto.setData(carona.getData().toString());
+    dto.setHora(carona.getHora().toString());
+    dto.setQntAssentos(carona.getQntAssentos());
+    dto.setVagasDisponiveis(carona.getVagasDisponiveis());
+    dto.setRealizado(carona.isRealizado());
+    dto.setLatSaida(carona.getRota().getSaida().getY());
+    dto.setLonSaida(carona.getRota().getSaida().getX());
+    dto.setSaidaTexto(carona.getRota().getSaidaTexto());
+    dto.setLatDestino(carona.getRota().getDestino().getY());
+    dto.setLonDestino(carona.getRota().getDestino().getX());
+    dto.setDestinoTexto(carona.getRota().getDestinoTexto());
+    dto.setDistancia(carona.getRota().getDistancia());
+    dto.setDuracao(carona.getRota().getDuracao());
+    dto.setNome(carona.getMotorista().getNome());
+    dto.setGenero(carona.getMotorista().getGenero().getDescricao());
+    return new ApiResponse(true, "Busca feita com sucesso", dto);
+  }
 }

@@ -40,21 +40,36 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
         @Param("data") LocalDate data
     );
 
-    // Buscar caronas em todo o trajeto
+
+    List<Carona> findByMotoristaAndDataGreaterThanEqual(User motorista, LocalDate data);
+
     @Query(value = """
     SELECT c.*
     FROM carona c
     JOIN rota r ON r.id = c.rota_id
-    WHERE ST_DWithin(
+    WHERE 
+    ST_DWithin(
         r.trajeto::geography,
         ST_SetSRID(:saida, 4326)::geography,
         10000
     )
-    AND ST_DWithin(
+    AND
+    ST_DWithin(
         r.trajeto::geography,
         ST_SetSRID(:destino, 4326)::geography,
         10000
     )
+    AND
+    ST_LineLocatePoint(
+        r.trajeto,
+        ST_SetSRID(:saida, 4326)
+    ) 
+    <
+    ST_LineLocatePoint(
+        r.trajeto,
+        ST_SetSRID(:destino, 4326)
+    )
+
     AND c.data = :data
     """, nativeQuery = true)
     List<Carona> buscarCaronasTodoTrajeto(
@@ -62,6 +77,4 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
         @Param("destino") Point destino,
         @Param("data") LocalDate data
     );
-
-    List<Carona> findByMotoristaAndDataGreaterThanEqual(User motorista, LocalDate data);
 }
