@@ -13,6 +13,8 @@ public class BuscaRetornaDto {
     private  double saidaLon;
     private  double destinoLat;
     private  double destinoLon;
+    private  Double distancia;
+    private  Double duracao;
     
     public Long getIdMotorista() {
         return idMotorista;
@@ -67,6 +69,18 @@ public class BuscaRetornaDto {
     }
     public void setHora(LocalTime hora) {
         this.hora = hora;
+    }
+    public Double getDistancia() {
+        return distancia;
+    }
+    public void setDistancia(Double distancia) {
+        this.distancia = distancia;
+    }
+    public Double getDuracao() {
+        return duracao;
+    }
+    public void setDuracao(Double duracao) {
+        this.duracao = duracao;
     }
 
     

@@ -21,12 +21,13 @@ public class ReservaService {
     private final RotaRepository rotaRepository;
     private final CaronaRepository caronaRepository;
     private final GeometryFactory geometryFactory = new GeometryFactory();
-    
-    
+    private final RotaMapperService rotaMapperService;
 
-    public ReservaService(RotaRepository rotaRepository, CaronaRepository caronaRepository) {
+    public ReservaService(RotaRepository rotaRepository, CaronaRepository caronaRepository,
+            RotaMapperService rotaMapperService) {
         this.rotaRepository = rotaRepository;
         this.caronaRepository = caronaRepository;
+        this.rotaMapperService = rotaMapperService;
     }
 
     public List<BuscaRetornaDto> buscarCaronas(BuscaCaronaDto buscaDto){
@@ -52,6 +53,9 @@ public class ReservaService {
 
                 buscaRetornoDto.setDestinoLat(destinoLat);
                 buscaRetornoDto.setDestinoLon(destinoLon);
+                // buscar o trajeto para exibir no front
+                buscaRetornoDto.setDistancia(carona.getRota().getDistancia());
+                buscaRetornoDto.setDuracao(carona.getRota().getDuracao());
                 buscaRetornoDto.setIdMotorista(carona.getMotorista().getId());
                 buscaRetornoDto.setNomeMotorista(carona.getMotorista().getNome());
                 buscaRetornoDto.setIdRota(carona.getRota().getId());
