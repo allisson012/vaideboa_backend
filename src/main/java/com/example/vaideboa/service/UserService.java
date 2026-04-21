@@ -5,6 +5,8 @@ import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.vaideboa.Dtos.ApiResponse;
+import com.example.vaideboa.Dtos.EditarUserDto;
 import com.example.vaideboa.Dtos.PreferenciasDto;
 import com.example.vaideboa.Dtos.UserDto;
 import com.example.vaideboa.Dtos.UserRetornoDto;
@@ -84,5 +86,26 @@ public class UserService {
         user.setAtivo(false);
         userRepository.save(user);
         return true;
+    }
+
+    public ApiResponse editarUsuario(EditarUserDto dto, String username){
+        Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
+        if(userOpt.isEmpty()){
+            return new ApiResponse(false, "Usuário não encontrado");
+        }
+        User user = userOpt.get();
+        if(dto.getNome() != null && !dto.getNome().isBlank()) {
+            user.setNome(dto.getNome());
+        }
+        if(dto.getTelefone() != null && !dto.getTelefone().isBlank()) {
+            user.setTelefone(dto.getTelefone());
+        }
+        if(dto.getDataNascimento() != null){
+
+        }
+        if(dto.getGenero() != null){
+            
+        }
+        return null;
     }
 }

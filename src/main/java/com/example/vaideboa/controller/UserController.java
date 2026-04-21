@@ -6,9 +6,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.example.vaideboa.Dtos.ApiResponse;
+import com.example.vaideboa.Dtos.EditarUserDto;
 import com.example.vaideboa.Dtos.UserDto;
 import com.example.vaideboa.Dtos.UserRetornoDto;
 
@@ -50,5 +54,15 @@ public class UserController {
         }
         return ResponseEntity.ok("Usuário deletado com sucesso");
     }
+
+    @PutMapping("/editar")
+    public ResponseEntity<?> editarUser(@RequestBody EditarUserDto editarUserDto, Authentication auth){
+        String username = auth.getName();
+        ApiResponse resposta = userService.editarUsuario(editarUserDto, username);
+        if(!resposta.isRetorno()){
+            return ResponseEntity.badRequest().body(resposta.getMensagem());
+        }
+        return ResponseEntity.ok("Usuário editado com sucesso");
+    } 
 
 }
