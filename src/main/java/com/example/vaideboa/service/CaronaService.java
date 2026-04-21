@@ -211,6 +211,7 @@ public class CaronaService {
     dto.setDuracao(carona.getRota().getDuracao());
     dto.setNome(carona.getMotorista().getNome());
     dto.setGenero(carona.getMotorista().getGenero().getDescricao());
+    dto.setIdRota(carona.getRota().getId());
     return new ApiResponse(true, "Busca feita com sucesso", dto);
   }
 }

@@ -15,6 +15,7 @@ public class CaronaRetornoDto {
     private String destinoTexto;
     private Double distancia;
     private Double duracao;
+    private Long idRota;
     // trajeto
     // id do user se for para o motorista 
     private String nome;
@@ -116,6 +117,12 @@ public class CaronaRetornoDto {
     }
     public void setGenero(String genero) {
         this.genero = genero;
+    }
+    public Long getIdRota() {
+        return idRota;
+    }
+    public void setIdRota(Long idRota) {
+        this.idRota = idRota;
     }
     
 }
