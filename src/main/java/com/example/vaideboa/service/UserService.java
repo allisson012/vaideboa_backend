@@ -1,5 +1,6 @@
 package com.example.vaideboa.service;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -94,18 +95,30 @@ public class UserService {
             return new ApiResponse(false, "Usuário não encontrado");
         }
         User user = userOpt.get();
+        boolean alterou = false;
         if(dto.getNome() != null && !dto.getNome().isBlank()) {
-            user.setNome(dto.getNome());
+            user.setNome(dto.getNome().trim());
+            alterou = true;
         }
         if(dto.getTelefone() != null && !dto.getTelefone().isBlank()) {
             user.setTelefone(dto.getTelefone());
+            alterou = true;
         }
         if(dto.getDataNascimento() != null){
-
+            if (dto.getDataNascimento().isAfter(LocalDate.now())) {
+                return new ApiResponse(false, "Data de nascimento inválida");
+            }
+            user.setDataNascimento(dto.getDataNascimento());
+            alterou = true;
         }
         if(dto.getGenero() != null){
-            
+            user.setGenero(dto.getGenero());
+            alterou = true;
         }
-        return null;
+        if(!alterou){
+            return new ApiResponse(false, "Nenhum dado para atualizar");
+        }
+        userRepository.save(user);
+        return new ApiResponse(true, "Usuário editado com sucesso");
     }
 }
