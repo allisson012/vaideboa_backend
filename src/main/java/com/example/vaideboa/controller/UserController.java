@@ -62,7 +62,7 @@ public class UserController {
         if(!resposta.isRetorno()){
             return ResponseEntity.badRequest().body(resposta.getMensagem());
         }
-        return ResponseEntity.ok("Usuário editado com sucesso");
+        return ResponseEntity.ok(resposta.getMensagem());
     } 
 
 }
