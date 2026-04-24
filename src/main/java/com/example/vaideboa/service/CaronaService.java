@@ -113,7 +113,7 @@ public class CaronaService {
       return new ApiResponse(true, "Carona finalizada com sucesso", null);
     }
 
-    public ApiResponse minhasViagens(String username, String tipo) {
+  public ApiResponse minhasViagens(String username, String tipo) {
     Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
     if (userOpt.isEmpty()) {
         return new ApiResponse(false, "Usuário não encontrado", null);
@@ -146,7 +146,9 @@ public class CaronaService {
                 c.getData(),
                 c.getHora(),
                 "MOTORISTA",
-                realizada
+                realizada,
+                c.getRota().getSaidaTexto(),
+                c.getRota().getDestinoTexto()
         ));
         idsAdicionados.add(c.getId());
     }
@@ -171,9 +173,11 @@ public class CaronaService {
                 destino.getY(),
                 destino.getX(),
                 c.getData(),
-                c.getHora(),
+                c.getHora(),                
                 "PASSAGEIRO",
-                realizada
+                realizada,
+                c.getRota().getSaidaTexto(),
+                c.getRota().getDestinoTexto()
         ));
         idsAdicionados.add(c.getId());
     }
