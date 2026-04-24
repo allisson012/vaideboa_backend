@@ -3,6 +3,13 @@ package com.example.vaideboa.Dtos;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ViagemRealizadaDTO {
     private Long id;
     private double origemLat;
@@ -13,45 +20,8 @@ public class ViagemRealizadaDTO {
     private LocalTime hora;
     private String papel;
     private boolean realizada;
+    private String origemTexto;
+    private String destinoTexto;
 
-    public ViagemRealizadaDTO(Long id, double origemLat, double origemLng, double destinoLat, double destinoLng, 
-            LocalDate data, LocalTime hora, String papel, boolean realizada) {
-        this.id = id;
-        this.origemLat = origemLat;
-        this.origemLng = origemLng;
-        this.destinoLat = destinoLat;
-        this.destinoLng = destinoLng;
-        this.data = data;
-        this.hora = hora;
-        this.papel = papel;
-        this.realizada = realizada;
-    }
 
-    public Long getId() {
-        return id;
-    }
-    public double getOrigemLat() {
-        return origemLat;
-    }
-    public double getOrigemLng() {
-        return origemLng;
-    }
-    public double getDestinoLat() {
-        return destinoLat;
-    }
-    public double getDestinoLng() {
-        return destinoLng;
-    }
-    public LocalDate getData() {
-        return data;
-    }
-    public LocalTime getHora() {
-        return hora;
-    }
-    public String getPapel() {
-        return papel;
-    }
-    public boolean isRealizada() { 
-        return realizada; 
-    }
 }
