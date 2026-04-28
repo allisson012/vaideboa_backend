@@ -4,15 +4,25 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.vaideboa.Dtos.ApiResponse;
+
+import org.springframework.web.bind.MethodArgumentNotValidException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(EmailJaCadastradoException.class)
-    public ResponseEntity<?> handleEmailJaCadastrado(
-            EmailJaCadastradoException ex) {
+@ExceptionHandler(MethodArgumentNotValidException.class)
+public ResponseEntity<?> handleValidationErrors(MethodArgumentNotValidException ex) {
 
-        return ResponseEntity
-                .badRequest()
-                .body(Map.of("message", ex.getMessage()));
-    }
+    String mensagem = ex.getBindingResult()
+            .getFieldErrors()
+            .stream()
+            .map(err -> err.getDefaultMessage())
+            .findFirst()
+            .orElse("Erro de validação");
+
+    return ResponseEntity
+        .badRequest()
+        .body(new ApiResponse(false, mensagem));
+}
 }

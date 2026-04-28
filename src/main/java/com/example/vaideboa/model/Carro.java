@@ -1,5 +1,6 @@
 package com.example.vaideboa.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -7,6 +8,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -24,10 +27,19 @@ public class Carro {
     private String marca;
     private String modelo;
     private String cor;
+    @Column(unique = true, nullable = false)
     private String placa;
+    @Min(1900)
+    @Max(2100)
     private Integer ano;
+    private String fotoVeiculo;
     // talvez salvar a foto do veiculo
+    @Min(1)
+    @Max(7) 
     private Integer vagas;
+    private Boolean arCondicionado;
+    private String descricao;
+    private Boolean ativo;
     @ManyToOne
     @JoinColumn(name = "dono_id")
     private User dono;
