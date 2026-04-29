@@ -45,4 +45,8 @@ public class Carona {
    @JsonIgnore
    @OneToMany(mappedBy = "carona")
    private List<Reserva> reservas; 
+   @JsonIgnore
+   @ManyToOne
+   @JoinColumn(name = "carro_id")
+   private Carro carro;
 }
