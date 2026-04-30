@@ -74,7 +74,7 @@ public class UserService {
             pref != null && pref.getCigarro() != null ? pref.getCigarro().getDescricao() : "TALVEZ",
             pref != null && pref.getAnimais() != null ? pref.getAnimais().getDescricao() : "TALVEZ"
         );
-        UserRetornoDto userRetornoDto = new UserRetornoDto(user.getNome(), user.getUsername(), user.getCpf(), user.getTelefone(), dataNascimento, user.getGenero().getDescricao(), preferenciasDto);
+        UserRetornoDto userRetornoDto = new UserRetornoDto(user.getNome(), user.getUsername(), user.getCpf(), user.getTelefone(), dataNascimento, user.getGenero().toString(), preferenciasDto);
         return userRetornoDto;
     }
 
