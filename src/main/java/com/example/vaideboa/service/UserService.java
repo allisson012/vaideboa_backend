@@ -66,7 +66,7 @@ public class UserService {
         User user = userOpt.get();
         String dataNascimento = user.getDataNascimento() != null
         ? user.getDataNascimento().toString()
-        : "Não informado";
+        : "NAO_INFORMADO";
         Preferencias pref = user.getPreferencia();
         PreferenciasDto preferenciasDto = new PreferenciasDto(
             pref != null && pref.getConversa() != null ? pref.getConversa().getDescricao() : "TALVEZ",
