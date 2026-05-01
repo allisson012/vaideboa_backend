@@ -1,6 +1,7 @@
 package com.example.vaideboa.repository;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,4 +78,11 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
         @Param("destino") Point destino,
         @Param("data") LocalDate data
     );
+
+    List<Carona> findByDataAndHoraBetweenAndNotificado1hFalse(
+    LocalDate data,
+    LocalTime inicio,
+    LocalTime fim
+    );
+    
 }

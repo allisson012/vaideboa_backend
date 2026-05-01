@@ -21,6 +21,7 @@ public class CaronaDto {
         this.destinoLat = destinoLat;
         this.destinoLng = destinoLng;
     }
+
     public int getQntAssentos() {
         return qntAssentos;
     }

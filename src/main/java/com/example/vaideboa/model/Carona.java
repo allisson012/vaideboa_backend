@@ -49,4 +49,7 @@ public class Carona {
    @ManyToOne
    @JoinColumn(name = "carro_id")
    private Carro carro;
+   private Boolean notificado1h = false;
+   private Boolean notificado30min = false;
+   
 }
