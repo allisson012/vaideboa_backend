@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.vaideboa.Dtos.AlterarSenhaDto;
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.EditarUserDto;
 import com.example.vaideboa.Dtos.UserDto;
@@ -58,11 +59,21 @@ public class UserController {
     @PutMapping("/editar")
     public ResponseEntity<?> editarUser(@RequestBody EditarUserDto editarUserDto, Authentication auth){
         String username = auth.getName();
-        ApiResponse resposta = userService.editarUsuario(editarUserDto, username);
-        if(!resposta.isRetorno()){
-            return ResponseEntity.badRequest().body(resposta.getMensagem());
+        ApiResponse retorno = userService.editarUsuario(editarUserDto, username);
+        if(!retorno.isRetorno()){
+            return ResponseEntity.badRequest().body(retorno.getMensagem());
         }
-        return ResponseEntity.ok(resposta.getMensagem());
+        return ResponseEntity.ok(retorno.getMensagem());
     } 
+
+    @PutMapping("/alterarSenha")
+    public ResponseEntity<?> alterarSenha(@RequestBody AlterarSenhaDto dto, Authentication auth){
+        String username = auth.getName();
+        ApiResponse retorno = userService.alterarSenha(dto, username);
+        if(!retorno.isRetorno()){
+            return ResponseEntity.badRequest().body(retorno.getMensagem());
+        } 
+        return ResponseEntity.ok(retorno.getMensagem());
+    }
 
 }
