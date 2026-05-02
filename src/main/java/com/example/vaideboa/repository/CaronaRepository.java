@@ -92,7 +92,19 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
         u.nome      AS userNome,
         r.id        AS reservaId,
         ST_AsText(r.saida)    AS saida,
-        ST_AsText(r.destino)  AS destino
+        ST_AsText(r.destino)  AS destino,
+        CASE 
+            WHEN ST_DWithin(
+                ST_GeomFromText(CAST(:posicaoMotorista AS text), 4326)::geography,
+                r.saida::geography,
+                300
+            ) THEN 'EMBARQUE'
+            WHEN ST_DWithin(
+                ST_GeomFromText(CAST(:posicaoMotorista AS text), 4326)::geography,
+                r.destino::geography,
+                300
+            ) THEN 'DESEMBARQUE'
+        END AS tipo
     FROM carona c
     JOIN users u    ON u.id = c.motorista_id
     JOIN rota ro    ON ro.id = c.rota_id
@@ -100,13 +112,21 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
     WHERE c.status_carona = 'EM_ANDAMENTO'
     AND r.aprovado = true
     AND r.ja_enviado_codigo_inicio = false
-    AND ST_DWithin(
-        ST_GeomFromText(CAST(:posicaoMotorista AS text), 4326)::geography,
-        r.saida::geography,
-        300
+    AND (
+        ST_DWithin(
+            ST_GeomFromText(CAST(:posicaoMotorista AS text), 4326)::geography,
+            r.saida::geography,
+            300
+        )
+        OR
+        ST_DWithin(
+            ST_GeomFromText(CAST(:posicaoMotorista AS text), 4326)::geography,
+            r.destino::geography,
+            300
+        )
     )
 """, nativeQuery = true)
-List<CaronaEmAndamentoDTO> buscarProximosDaSaida(
+List<CaronaEmAndamentoDTO> buscarProximosParaEnviarCodigo(
     @Param("posicaoMotorista") Point posicao
 );
 
