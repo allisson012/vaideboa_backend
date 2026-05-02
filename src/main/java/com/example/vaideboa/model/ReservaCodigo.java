@@ -1,6 +1,7 @@
 package com.example.vaideboa.model;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -27,14 +28,14 @@ public class ReservaCodigo {
     @JoinColumn(name = "reserva_id")
     private Reserva reserva;
 
-    private int codigoEmbarque;
+    private String codigoEmbarque; // um numero de quatro digitos
     private boolean embarqueLiberado = false; // para o sistema saber se ele ja liberou o codigo
     private boolean embarqueRealizado = false; // para quando o passageiro colocar o codigo
 
-    private int codigoDesembarque;
+    private String codigoDesembarque; // um numero de quatro digitos
     private boolean desembarqueLiberado = false;
     private boolean desembarqueRealizado = false;
 
-    private Timestamp criadoEm;
+    private LocalDateTime criadoEm;
 
 }
