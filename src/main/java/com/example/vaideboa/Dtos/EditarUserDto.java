@@ -9,11 +9,14 @@ public class EditarUserDto {
     private final String telefone;
     private final LocalDate dataNascimento;
     private final Generos genero;
-    public EditarUserDto(String nome, String telefone, LocalDate dataNascimento, Generos genero) {
+    private final String cpf;
+
+    public EditarUserDto(String nome, String telefone, LocalDate dataNascimento, Generos genero, String cpf) {
         this.nome = nome;
         this.telefone = telefone;
         this.dataNascimento = dataNascimento;
         this.genero = genero;
+        this.cpf = cpf;
     }
     public String getNome() {
         return nome;
@@ -27,5 +30,7 @@ public class EditarUserDto {
     public Generos getGenero() {
         return genero;
     }
-
+    public String getCpf() {
+        return cpf;
+    }
 }
