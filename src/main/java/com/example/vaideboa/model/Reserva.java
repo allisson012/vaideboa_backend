@@ -2,6 +2,8 @@ package com.example.vaideboa.model;
 
 import java.util.List;
 
+import org.locationtech.jts.geom.Point;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
@@ -37,6 +39,9 @@ public class Reserva {
     @JsonIgnore
     @OneToMany(mappedBy = "reserva")
     private List<Avaliacao> avaliacoes;
+    private Point saida; // saida do passageiro em si vou usar na hora de gerar os codigos de confirmação
+    private Point destino;
     // pagamento
+    private boolean jaEnviadoCodigoInicio;
    
 }

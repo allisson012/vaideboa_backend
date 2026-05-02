@@ -4,9 +4,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+
+import com.example.vaideboa.model.enums.StatusCarona;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -41,7 +45,7 @@ public class Carona {
    @JoinColumn(name = "rota_id")
    @JsonIgnore
    private Rota rota;
-   private boolean realizado; // carona ja foi realizada
+   private boolean realizado; // posso tirar esse campo pq já tem no statusCarona
    @JsonIgnore
    @OneToMany(mappedBy = "carona")
    private List<Reserva> reservas; 
@@ -51,5 +55,7 @@ public class Carona {
    private Carro carro;
    private Boolean notificado1h = false;
    private Boolean notificado30min = false;
-   
+   @Enumerated(EnumType.STRING)
+   private StatusCarona statusCarona;
+
 }

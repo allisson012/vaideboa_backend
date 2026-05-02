@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.example.vaideboa.Dtos.CaronaEmAndamentoDTO;
 import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.Rota;
 import com.example.vaideboa.model.User;
@@ -85,4 +86,28 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
     LocalTime fim
     );
     
+@Query(value = """
+    SELECT 
+        u.id        AS userId,
+        u.nome      AS userNome,
+        r.id        AS reservaId,
+        ST_AsText(r.saida)    AS saida,
+        ST_AsText(r.destino)  AS destino
+    FROM carona c
+    JOIN users u    ON u.id = c.motorista_id
+    JOIN rota ro    ON ro.id = c.rota_id
+    JOIN reserva r  ON r.carona_id = c.id
+    WHERE c.status_carona = 'EM_ANDAMENTO'
+    AND r.aprovado = true
+    AND r.ja_enviado_codigo_inicio = false
+    AND ST_DWithin(
+        ST_GeomFromText(CAST(:posicaoMotorista AS text), 4326)::geography,
+        r.saida::geography,
+        300
+    )
+""", nativeQuery = true)
+List<CaronaEmAndamentoDTO> buscarProximosDaSaida(
+    @Param("posicaoMotorista") Point posicao
+);
+
 }
