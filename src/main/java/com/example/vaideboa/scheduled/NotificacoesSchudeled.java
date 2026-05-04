@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.Reserva;
@@ -21,7 +22,8 @@ public class NotificacoesSchudeled {
         this.caronaRepository = caronaRepository;
         this.notificacoesService = notificacoesService;
     }
-
+    // ta funcionando so falta notificar o dono da carona 
+    @Transactional
     @Scheduled(fixedRate = 300000)
     public void verificarCaronasEnotificar(){
         LocalDate data = LocalDate.now();
@@ -33,7 +35,7 @@ public class NotificacoesSchudeled {
             List<Reserva> reservas = carona.getReservas();
             for(Reserva reserva : reservas){
             String token = reserva.getPassageiro().getToken(); 
-                if (token != null) {
+                if (token == null) {
                     notificacoesService.enviarPushExpo(
                         token,
                         "🚗 Sua carona começa em 1 hora!",

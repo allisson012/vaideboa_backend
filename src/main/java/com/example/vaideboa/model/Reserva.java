@@ -43,5 +43,5 @@ public class Reserva {
     private Point destino;
     // pagamento
     private boolean jaEnviadoCodigoInicio;
-   
+    private boolean jaEnviadoCodigoFim;
 }

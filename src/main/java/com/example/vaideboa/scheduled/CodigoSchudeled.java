@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import com.example.vaideboa.Dtos.CaronaEmAndamentoDTO;
 import com.example.vaideboa.repository.CaronaRepository;
 
-@Component
+//@Component
 public class CodigoSchudeled {
     private final CaronaRepository caronaRepository;
 
@@ -17,8 +17,8 @@ public class CodigoSchudeled {
         this.caronaRepository = caronaRepository;
     }
     
-    @Scheduled(fixedRate = 1000) // 1 minuto
-    public void verificarCaronaseEnviarCodigos(Point localizacaoMotorista){
-       List<CaronaEmAndamentoDTO> dtos = caronaRepository.buscarProximosParaEnviarCodigo(localizacaoMotorista);
-    }
+    // @Scheduled(fixedRate = 1000) // 1 minuto
+    // public void verificarCaronaseEnviarCodigos(Point localizacaoMotorista){
+    //    List<CaronaEmAndamentoDTO> dtos = caronaRepository.buscarProximosParaEnviarCodigo(localizacaoMotorista);
+    // }
 }
