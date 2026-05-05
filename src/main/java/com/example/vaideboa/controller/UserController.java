@@ -16,6 +16,7 @@ import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.EditarUserDto;
 import com.example.vaideboa.Dtos.UserDto;
 import com.example.vaideboa.Dtos.UserRetornoDto;
+import com.example.vaideboa.Dtos.PreferenciasDto;
 
 import com.example.vaideboa.service.UserService;
 
@@ -76,4 +77,13 @@ public class UserController {
         return ResponseEntity.ok(retorno.getMensagem());
     }
 
+    @PutMapping("/preferencias")
+    public ResponseEntity<?> atualizarPreferencias(@RequestBody PreferenciasDto dto, Authentication auth){
+        String username = auth.getName();
+        ApiResponse retorno = userService.atualizarPreferencias(dto, username);
+        if (!retorno.isRetorno()){
+            return ResponseEntity.badRequest().body(retorno.getMensagem());
+        }
+        return ResponseEntity.ok(retorno.getDados());
+    }
 }
