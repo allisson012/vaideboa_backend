@@ -180,4 +180,31 @@ public class UserService {
         userRepository.save(user);
         return new ApiResponse(true, "Senha alterado com sucesso");
     }
+
+    public ApiResponse atualizarPreferencias(PreferenciasDto dto, String username){
+        Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
+
+        if (userOpt.isEmpty()){
+            return new ApiResponse (false, "Usuário não encontrado", null);
+        }
+        User user = userOpt.get();
+        Preferencias pref = user.getPreferencia();
+
+        if (pref==null){
+            pref = new Preferencias();
+        }
+        try{
+            pref.setConversa(NivelPreferencia.valueOf(dto.getConversa().toUpperCase()));
+            pref.setMusica(NivelPreferencia.valueOf(dto.getMusica().toUpperCase()));
+            pref.setCigarro(NivelPreferencia.valueOf(dto.getCigarro().toUpperCase()));
+            pref.setAnimais(NivelPreferencia.valueOf(dto.getAnimais().toUpperCase()));
+        } catch (IllegalArgumentException e){
+            return new ApiResponse(false, "Valor inválido para preferências", null);
+        }
+        
+
+        user.setPreferencia(pref);
+        userRepository.save(user);
+        return new ApiResponse(true, "Preferências atualizadas com sucesso", pref);
+    }
 }
