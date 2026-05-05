@@ -112,7 +112,7 @@ public class UserService {
             alterou = true;
         }
 
-        if(dto.getTelefone() != null && !dto.getTelefone().isBlank()) {
+        if(dto.getTelefone() != null && !dto.getTelefone().isBlank() && dto.getTelefone().matches("\\d{10,11}")) {
             user.setTelefone(dto.getTelefone());
             alterou = true;
         }
