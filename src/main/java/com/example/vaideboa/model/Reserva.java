@@ -6,6 +6,7 @@ import org.locationtech.jts.geom.Point;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -39,7 +40,9 @@ public class Reserva {
     @JsonIgnore
     @OneToMany(mappedBy = "reserva")
     private List<Avaliacao> avaliacoes;
-    private Point saida; // saida do passageiro em si vou usar na hora de gerar os codigos de confirmação
+    @Column(columnDefinition = "geometry(Point,4326)")
+    private Point saida;
+    @Column(columnDefinition = "geometry(Point,4326)")
     private Point destino;
     // pagamento
     private boolean jaEnviadoCodigoInicio;

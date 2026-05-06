@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 
 import com.example.vaideboa.Dtos.AgendarCaronaDto;
@@ -29,6 +32,7 @@ public class PedidoService {
     private final UserRepository userRepository;
     private final CaronaRepository caronaRepository;
     private final PedidoCaronaRepository pedidoCaronaRepository;
+    private final GeometryFactory geometryFactory = new GeometryFactory();
     
     public PedidoService(UserRepository userRepository, CaronaRepository caronaRepository,
             PedidoCaronaRepository pedidoCaronaRepository, ReservaRepository reservaRepository) {
@@ -59,10 +63,18 @@ public class PedidoService {
       if(carona.getVagasDisponiveis() == 0){
         return new ApiResponse(false, "Carona lotada");
       }
+      Point saida = geometryFactory.createPoint(
+        new Coordinate(agendarCaronaDto.getSaidaLng(), agendarCaronaDto.getSaidaLat())
+      );
+      Point destino = geometryFactory.createPoint(
+        new Coordinate(agendarCaronaDto.getDestinoLng(), agendarCaronaDto.getDestinoLat())
+      );
       PedidoCarona pedidoCarona = new PedidoCarona();
       pedidoCarona.setCarona(carona);
       pedidoCarona.setPassageiro(user);
       pedidoCarona.setStatus(StatusPedido.PENDENTE);
+      pedidoCarona.setSaida(saida);
+      pedidoCarona.setDestino(destino);
       pedidoCaronaRepository.save(pedidoCarona);
 
       return new ApiResponse(true, "Pedido agendado com sucesso");
@@ -87,6 +99,8 @@ public class PedidoService {
       }
       pedidoCarona.setStatus(StatusPedido.ACEITO);
       Reserva reserva = new Reserva();
+      reserva.setSaida(pedidoCarona.getSaida());
+      reserva.setDestino(pedidoCarona.getDestino());
       reserva.setCarona(pedidoCarona.getCarona());
       reserva.setPassageiro(pedidoCarona.getPassageiro());
       reserva.setAprovado(true); // como ainda não tem pagamento estou deixando ele aprovado
