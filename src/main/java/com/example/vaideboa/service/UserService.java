@@ -77,10 +77,10 @@ public class UserService {
         : "NAO_INFORMADO";
         Preferencias pref = user.getPreferencia();
         PreferenciasDto preferenciasDto = new PreferenciasDto(
-            pref != null && pref.getConversa() != null ? pref.getConversa().getDescricao() : "TALVEZ",
-            pref != null && pref.getMusica() != null ? pref.getMusica().getDescricao() : "TALVEZ",
-            pref != null && pref.getCigarro() != null ? pref.getCigarro().getDescricao() : "TALVEZ",
-            pref != null && pref.getAnimais() != null ? pref.getAnimais().getDescricao() : "TALVEZ"
+            pref != null && pref.getConversa() != null ? pref.getConversa(): NivelPreferencia.TALVEZ,
+            pref != null && pref.getMusica() != null ? pref.getMusica(): NivelPreferencia.TALVEZ,
+            pref != null && pref.getCigarro() != null ? pref.getCigarro(): NivelPreferencia.TALVEZ,
+            pref != null && pref.getAnimais() != null ? pref.getAnimais(): NivelPreferencia.TALVEZ
         );
         UserRetornoDto userRetornoDto = new UserRetornoDto(user.getNome(), user.getUsername(), user.getCpf(), user.getTelefone(), dataNascimento, user.getGenero().toString(), preferenciasDto);
         return userRetornoDto;
@@ -194,10 +194,10 @@ public class UserService {
             pref = new Preferencias();
         }
         try{
-            pref.setConversa(NivelPreferencia.valueOf(dto.getConversa().toUpperCase()));
-            pref.setMusica(NivelPreferencia.valueOf(dto.getMusica().toUpperCase()));
-            pref.setCigarro(NivelPreferencia.valueOf(dto.getCigarro().toUpperCase()));
-            pref.setAnimais(NivelPreferencia.valueOf(dto.getAnimais().toUpperCase()));
+            pref.setConversa(dto.getConversa());
+            pref.setMusica(dto.getMusica());
+            pref.setCigarro(dto.getCigarro());
+            pref.setAnimais(dto.getAnimais());
         } catch (IllegalArgumentException e){
             return new ApiResponse(false, "Valor inválido para preferências", null);
         }
