@@ -1,6 +1,7 @@
 package com.example.vaideboa.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -15,4 +16,6 @@ public interface PedidoCaronaRepository extends JpaRepository<PedidoCarona,Long>
     boolean existsByPassageiroAndCarona(User user, Carona carona);
 
     List<PedidoCarona> findByCaronaAndStatus(Carona carona, StatusPedido status);
+
+    List<PedidoCarona> findByCaronaId(Long idCarona);
 }

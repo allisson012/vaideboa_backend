@@ -37,7 +37,8 @@ public class User {
     private String cpf;
     private String telefone;
     private LocalDate dataNascimento;
-    //private String foto; // caminho ou talvez guardar a foto mesmo
+    //private double nota;
+    private String foto; // caminho ou talvez guardar a foto mesmo
     // foto do documento e selfie verificação manual por parte da equipe 
     private boolean contaNaoExpirada = true;
     private boolean contaNaoBloqueada = true;

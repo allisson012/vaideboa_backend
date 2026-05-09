@@ -75,6 +75,8 @@ public class PedidoService {
       pedidoCarona.setStatus(StatusPedido.PENDENTE);
       pedidoCarona.setSaida(saida);
       pedidoCarona.setDestino(destino);
+      LocalDate dataPedido = LocalDate.now();
+      pedidoCarona.setDataPedido(dataPedido);
       pedidoCaronaRepository.save(pedidoCarona);
 
       return new ApiResponse(true, "Pedido agendado com sucesso");
@@ -128,6 +130,7 @@ public class PedidoService {
       for (PedidoCarona pedidoCarona : pedidosCarona) {
         PedidoCaronaRetornoDto dto = new PedidoCaronaRetornoDto();
         dto.setNome(pedidoCarona.getPassageiro().getNome());
+        dto.setFoto(pedidoCarona.getPassageiro().getFoto());
         dto.setData(pedidoCarona.getCarona().getData().toString());
         dto.setGenero(pedidoCarona.getPassageiro().getGenero().getDescricao());
         dto.setDistancia(pedidoCarona.getCarona().getRota().getDistancia());
@@ -146,5 +149,52 @@ public class PedidoService {
       }
       
       return new ApiResponse(true, "Pedidos pegos com sucesso", dtos);
+    }
+
+    public ApiResponse buscarTodosPedidos(Long idCarona, String username){
+      Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
+      if(userOpt.isEmpty()){
+        return new ApiResponse(false, "Usuário não encontado");
+      }
+      User user = userOpt.get();
+      Optional<Carona> caronaOpt = caronaRepository.findById(idCarona);
+      if(caronaOpt.isEmpty()){
+        return new ApiResponse(false, "Carona não encontrada");
+      }
+      Carona carona = caronaOpt.get();
+      if(!carona.getMotorista().equals(user)){
+        return new ApiResponse(false, "Usuário não tem acesso a carona");
+      }
+      List<PedidoCarona> pedidosCarona = pedidoCaronaRepository.findByCaronaId(idCarona);
+      if(pedidosCarona.isEmpty()){
+        return new ApiResponse(false,"Carona não possui nenhum pedido");
+      }
+      List<PedidoCaronaRetornoDto> dtos = new ArrayList<>();
+      for (PedidoCarona pedidoCarona : pedidosCarona) {
+        PedidoCaronaRetornoDto dto = new PedidoCaronaRetornoDto();
+        dto.setIdUser(pedidoCarona.getPassageiro().getId());
+      //  dto.setAvaliacao(pedidoCarona.getPassageiro().getNota());
+        dto.setData(pedidoCarona.getCarona().getData().toString());
+        dto.setHora(pedidoCarona.getCarona().getHora().toString());
+        dto.setFoto(pedidoCarona.getPassageiro().getFoto());
+        dto.setGenero(pedidoCarona.getPassageiro().getGenero().toString());
+        dto.setStatusPedido(pedidoCarona.getStatus().toString());
+        dto.setNome(pedidoCarona.getPassageiro().getNome());
+        dto.setVagasDisponiveis(pedidoCarona.getCarona().getVagasDisponiveis());
+        dto.setIdPedidoCarona(pedidoCarona.getId());
+        dto.setLatSaida(pedidoCarona.getCarona().getRota().getSaida().getY());
+        dto.setLonSaida(pedidoCarona.getCarona().getRota().getSaida().getX());
+        dto.setSaidaTexto(pedidoCarona.getCarona().getRota().getSaidaTexto());
+
+        dto.setLatDestino(pedidoCarona.getCarona().getRota().getDestino().getY());
+        dto.setLonDestino(pedidoCarona.getCarona().getRota().getDestino().getX());
+        dto.setDestinoTexto(pedidoCarona.getCarona().getRota().getDestinoTexto());
+        dto.setDuracao(pedidoCarona.getCarona().getRota().getDuracao());
+        dto.setIdCarona(pedidoCarona.getCarona().getId());
+        dto.setDistancia(pedidoCarona.getCarona().getRota().getDistancia());
+        dto.setDataPedido(pedidoCarona.getDataPedido() != null ? pedidoCarona.getDataPedido().toString() : "");
+        dtos.add(dto);
+      }
+      return new ApiResponse(true, "Pedidos buscados com sucesso", dtos);
     }
 }
