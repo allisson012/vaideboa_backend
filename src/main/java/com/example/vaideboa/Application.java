@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-@EnableScheduling
+//@EnableScheduling -> deixei comentado para não ficar rodando schudeled durante desenvolvimento
 public class Application {
 
 	public static void main(String[] args) {
