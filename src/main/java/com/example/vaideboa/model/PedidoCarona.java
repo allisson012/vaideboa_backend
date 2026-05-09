@@ -1,8 +1,11 @@
 package com.example.vaideboa.model;
 
+import org.locationtech.jts.geom.Point;
+
 import com.example.vaideboa.model.enums.StatusPedido;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -38,4 +41,8 @@ public class PedidoCarona {
     private Carona carona;
     @Enumerated(EnumType.STRING)
     private StatusPedido status;
+    @Column(columnDefinition = "geometry(Point,4326)")
+    private Point saida;
+    @Column(columnDefinition = "geometry(Point,4326)")
+    private Point destino;
 }

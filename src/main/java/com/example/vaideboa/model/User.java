@@ -65,4 +65,5 @@ public class User {
     private Preferencias preferencia;
     @OneToMany(mappedBy = "dono")
     private List<Carro> meusCarros;
+    private String token;
 }

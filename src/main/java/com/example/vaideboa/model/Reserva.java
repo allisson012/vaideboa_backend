@@ -2,8 +2,11 @@ package com.example.vaideboa.model;
 
 import java.util.List;
 
+import org.locationtech.jts.geom.Point;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -37,6 +40,11 @@ public class Reserva {
     @JsonIgnore
     @OneToMany(mappedBy = "reserva")
     private List<Avaliacao> avaliacoes;
+    @Column(columnDefinition = "geometry(Point,4326)")
+    private Point saida;
+    @Column(columnDefinition = "geometry(Point,4326)")
+    private Point destino;
     // pagamento
-   
+    private boolean jaEnviadoCodigoInicio;
+    private boolean jaEnviadoCodigoFim;
 }

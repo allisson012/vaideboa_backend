@@ -1,7 +1,5 @@
 package com.example.vaideboa.controller;
 
-import java.util.Optional;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,8 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.CaronaDto;
-import com.example.vaideboa.model.User;
-import com.example.vaideboa.repository.UserRepository;
 import com.example.vaideboa.service.CaronaService;
 
 
@@ -69,6 +65,13 @@ public class CaronaController {
             return ResponseEntity.badRequest().body(resposta.getMensagem());
         }
         return ResponseEntity.ok(resposta.getDados());
+    }
+
+    @GetMapping("/iniciar/{idCarona}")
+    public ResponseEntity<?> iniciarCarona( @PathVariable Long idCarona, Authentication auth){
+        String username = auth.getName();
+        caronaService.iniciarCarona(idCarona, username);
+        return null;
     }
 
 }

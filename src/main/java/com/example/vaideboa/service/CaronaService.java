@@ -3,6 +3,7 @@ package com.example.vaideboa.service;
 import com.example.vaideboa.repository.CaronaRepository;
 import com.example.vaideboa.repository.RotaRepository;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -25,6 +26,7 @@ import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.Reserva;
 import com.example.vaideboa.model.Rota;
 import com.example.vaideboa.model.User;
+import com.example.vaideboa.model.enums.StatusCarona;
 import com.example.vaideboa.repository.UserRepository;
 
 @Service
@@ -35,17 +37,19 @@ public class CaronaService {
     private final RotaService rotaService;
     private final AvaliacaoService avaliacaoService;
     private final GeoService geoService;
+    private final CodigoService codigoService;
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
     public CaronaService(CaronaRepository caronaRepository, RotaRepository rotaRepository,
-            UserRepository userRepository, RotaService rotaService, AvaliacaoService avaliacaoService,
-            GeoService geoService) {
-        this.caronaRepository = caronaRepository;
-        this.rotaRepository = rotaRepository;
-        this.userRepository = userRepository;
-        this.rotaService = rotaService;
-        this.avaliacaoService = avaliacaoService;
-        this.geoService = geoService;
+        UserRepository userRepository, RotaService rotaService, AvaliacaoService avaliacaoService,
+        GeoService geoService, CodigoService codigoService) {
+      this.caronaRepository = caronaRepository;
+      this.rotaRepository = rotaRepository;
+      this.userRepository = userRepository;
+      this.rotaService = rotaService;
+      this.avaliacaoService = avaliacaoService;
+      this.geoService = geoService;
+      this.codigoService = codigoService;
     }
 
     public boolean cadastrarCarona(CaronaDto caronaDto , String username){
@@ -217,5 +221,39 @@ public class CaronaService {
     dto.setGenero(carona.getMotorista().getGenero().getDescricao());
     dto.setIdRota(carona.getRota().getId());
     return new ApiResponse(true, "Busca feita com sucesso", dto);
+  }
+
+  public ApiResponse iniciarCarona(Long idCarona, String username){
+    User user = userRepository.findByUsernameAndAtivoTrue(username)
+    .orElse(null);
+
+    if (user == null) {
+        return new ApiResponse(false, "Usuário não encontrado");
+    }
+
+    Carona carona = caronaRepository.findById(idCarona).orElse(null);
+    if(carona == null){
+      return new ApiResponse(false,"Carona não encontrada");
+    }
+
+    if(!carona.getMotorista().getId().equals(user.getId())){
+      return new ApiResponse(false,"Usuário não tem acesso a essa carona");
+    }
+    if(!carona.getData().equals(LocalDate.now())){
+      return new ApiResponse(false,"Carona fora da data agendada");
+    }
+    // vou colocar validação de hora vai ter uma faixa de horario para poder iniciar
+      // LocalTime agora = LocalTime.now();
+      // if (agora.isBefore(carona.getHoraInicio())) {
+      //     return new ApiResponse(false, "Ainda não é horário de iniciar a carona");
+      // }
+    // tambem não sei se faço validação do local onde ele esta 
+    carona.setStatusCarona(StatusCarona.EM_ANDAMENTO);
+    ApiResponse retorno = codigoService.gerarCodigos(carona.getReservas());
+    if(!retorno.isRetorno()){
+      return retorno;
+    }
+    caronaRepository.save(carona);
+    return new ApiResponse(true, "Carona iniciada com sucesso");
   }
 }
