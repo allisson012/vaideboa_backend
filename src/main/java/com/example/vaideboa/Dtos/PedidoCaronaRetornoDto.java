@@ -20,6 +20,7 @@ public class PedidoCaronaRetornoDto {
     private String dataPedido;
     private String hora;
     private int vagasDisponiveis;
+    private Long idCarona;
     private Long idPedidoCarona;
     private String genero;
     // preferencias do usuario
@@ -143,6 +144,12 @@ public class PedidoCaronaRetornoDto {
     }
     public void setDataPedido(String dataPedido) {
         this.dataPedido = dataPedido;
+    }
+    public Long getIdCarona() {
+        return idCarona;
+    }
+    public void setIdCarona(Long idCarona) {
+        this.idCarona = idCarona;
     }
     
     

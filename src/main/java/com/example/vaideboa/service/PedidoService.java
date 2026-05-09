@@ -190,6 +190,7 @@ public class PedidoService {
         dto.setLonDestino(pedidoCarona.getCarona().getRota().getDestino().getX());
         dto.setDestinoTexto(pedidoCarona.getCarona().getRota().getDestinoTexto());
         dto.setDuracao(pedidoCarona.getCarona().getRota().getDuracao());
+        dto.setIdCarona(pedidoCarona.getCarona().getId());
         dto.setDistancia(pedidoCarona.getCarona().getRota().getDistancia());
         dto.setDataPedido(pedidoCarona.getDataPedido() != null ? pedidoCarona.getDataPedido().toString() : "");
         dtos.add(dto);
