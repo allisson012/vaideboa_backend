@@ -36,20 +36,30 @@ public class PedidoController {
     @PostMapping("/aceitar/{id}")
     public ResponseEntity<?> aceitarPedidoCarona(@PathVariable Long id, Authentication auth){
         String username = auth.getName();
-        ApiResponse resposta = pedidoService.aceitarPedidoCarona(id, username);
-        if(!resposta.isRetorno()){
-            return ResponseEntity.badRequest().body(resposta.getMensagem());
+        ApiResponse response = pedidoService.aceitarPedidoCarona(id, username);
+        if(!response.isRetorno()){
+            return ResponseEntity.badRequest().body(response.getMensagem());
         }
-        return ResponseEntity.ok(resposta.getMensagem());
+        return ResponseEntity.ok(response.getMensagem());
     }
 
     @GetMapping("/buscar")
     public ResponseEntity<?> buscarPedidoCarona(Authentication auth){
         String username = auth.getName();
-        ApiResponse resposta = pedidoService.buscarPedidos(username);
-        if(!resposta.isRetorno()){
-            return ResponseEntity.badRequest().body(resposta.getMensagem());
+        ApiResponse response = pedidoService.buscarPedidos(username);
+        if(!response.isRetorno()){
+            return ResponseEntity.badRequest().body(response.getMensagem());
         }
-        return ResponseEntity.ok(resposta.getDados());
+        return ResponseEntity.ok(response.getDados());
+    }
+
+    @GetMapping("/buscarPedidos/{idCarona}")
+    public ResponseEntity<?> buscarTodosPedidos(@PathVariable Long idCarona, Authentication auth){
+        String username = auth.getName();
+        ApiResponse response = pedidoService.buscarTodosPedidos(idCarona, username);
+        if(!response.isRetorno()){
+            return ResponseEntity.badRequest().body(response.getMensagem());
+        }
+        return ResponseEntity.ok(response.getDados());
     }
 }

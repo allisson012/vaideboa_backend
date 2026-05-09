@@ -1,9 +1,12 @@
 package com.example.vaideboa.Dtos;
 
 import org.locationtech.jts.geom.Point;
+import org.springframework.cglib.core.Local;
 
 public class PedidoCaronaRetornoDto {
+    private Long idUser;
     private String nome;
+    private String foto;
     private Double avaliacao;
     // foto se tiver
     // quantidades de avaliações 
@@ -14,6 +17,7 @@ public class PedidoCaronaRetornoDto {
     private double lonDestino;
     private String destinoTexto;
     private String data;
+    private String dataPedido;
     private String hora;
     private int vagasDisponiveis;
     private Long idPedidoCarona;
@@ -21,6 +25,20 @@ public class PedidoCaronaRetornoDto {
     // preferencias do usuario
     private Double distancia;
     private Double duracao;
+    private String statusPedido;
+    
+        public Long getIdUser() {
+        return idUser;
+    }
+    public void setIdUser(Long idUser) {
+        this.idUser = idUser;
+    }
+    public String getStatusPedido() {
+        return statusPedido;
+    }
+    public void setStatusPedido(String statusPedido) {
+        this.statusPedido = statusPedido;
+    }
     // carro
     public PedidoCaronaRetornoDto() {
     }
@@ -113,6 +131,18 @@ public class PedidoCaronaRetornoDto {
     }
     public void setDuracao(Double duracao) {
         this.duracao = duracao;
+    }
+    public String getFoto() {
+        return foto;
+    }
+    public void setFoto(String foto) {
+        this.foto = foto;
+    }
+    public String getDataPedido() {
+        return dataPedido;
+    }
+    public void setDataPedido(String dataPedido) {
+        this.dataPedido = dataPedido;
     }
     
     

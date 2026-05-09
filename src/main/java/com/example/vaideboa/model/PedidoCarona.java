@@ -1,5 +1,7 @@
 package com.example.vaideboa.model;
 
+import java.time.LocalDate;
+
 import org.locationtech.jts.geom.Point;
 
 import com.example.vaideboa.model.enums.StatusPedido;
@@ -45,4 +47,5 @@ public class PedidoCarona {
     private Point saida;
     @Column(columnDefinition = "geometry(Point,4326)")
     private Point destino;
+    private LocalDate dataPedido;
 }
