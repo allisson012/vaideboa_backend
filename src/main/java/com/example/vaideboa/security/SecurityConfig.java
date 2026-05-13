@@ -18,6 +18,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.context.annotation.Lazy;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -31,17 +32,31 @@ public class SecurityConfig {
     @Value("${jwt.private.key}")
     private RSAPrivateKey priv;
 
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2SuccessHandler oauth2SuccessHandler;
+    
+    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, @Lazy OAuth2SuccessHandler oauth2SuccessHandler){
+        this.customOAuth2UserService = customOAuth2UserService;
+        this.oauth2SuccessHandler = oauth2SuccessHandler;
+    }
+
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(
                 auth -> auth.requestMatchers("/authenticate").permitAll()
                 .requestMatchers("/user/cadastrar").permitAll()
+                .requestMatchers("/oauth2/**", "/login/**").permitAll()
                 .anyRequest().authenticated())
             .oauth2ResourceServer(
-                conf -> conf.jwt(Customizer.withDefaults()));
+                conf -> conf.jwt(Customizer.withDefaults()))
+            .oauth2Login(oauth -> oauth
+                .userInfoEndpoint(userInfo -> 
+                    userInfo.userService(customOAuth2UserService)
+                )
+                .successHandler(oauth2SuccessHandler)
+            );
         return http.build();
-
     }
 
     @Bean
