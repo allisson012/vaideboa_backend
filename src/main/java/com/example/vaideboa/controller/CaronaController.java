@@ -70,8 +70,11 @@ public class CaronaController {
     @GetMapping("/iniciar/{idCarona}")
     public ResponseEntity<?> iniciarCarona( @PathVariable Long idCarona, Authentication auth){
         String username = auth.getName();
-        caronaService.iniciarCarona(idCarona, username);
-        return null;
+        ApiResponse resposta = caronaService.iniciarCarona(idCarona, username);
+        if(!resposta.isRetorno()){
+           return ResponseEntity.badRequest().body(resposta.getMensagem()); 
+        }
+        return ResponseEntity.ok(resposta.getMensagem());
     }
 
 }
