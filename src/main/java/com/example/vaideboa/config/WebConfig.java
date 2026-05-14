@@ -17,7 +17,7 @@ public class WebConfig {
                         .allowedOrigins("http://localhost:8081") // seu frontend
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
                         .allowedHeaders("Authorization", "Content-Type")
-                        .allowCredentials(false);
+                        .allowCredentials(true);
             }
         };
     }
