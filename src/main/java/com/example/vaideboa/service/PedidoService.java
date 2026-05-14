@@ -197,4 +197,26 @@ public class PedidoService {
       }
       return new ApiResponse(true, "Pedidos buscados com sucesso", dtos);
     }
+
+    public ApiResponse recusarPedido(String username, Long id){
+      Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
+      if(userOpt.isEmpty()){
+        return new ApiResponse(false,"Usuário não encontrado");
+      }
+      User user = userOpt.get();
+      Optional<PedidoCarona> pedidoCaronaOpt = pedidoCaronaRepository.findById(id);
+      if(pedidoCaronaOpt.isEmpty()){
+        return new ApiResponse(false,"Pedido de Carona não encontrado");
+      }
+      PedidoCarona pedidoCarona = pedidoCaronaOpt.get();
+      if(!pedidoCarona.getCarona().getMotorista().equals(user)){
+        return new ApiResponse(false,"Você não tem permissão para modificar este pedido de carona.");
+      }
+      if (pedidoCarona.getStatus() == StatusPedido.RECUSADO) {
+        return new ApiResponse(false,"Este pedido já foi recusado.");
+      }
+      pedidoCarona.setStatus(StatusPedido.RECUSADO);
+      pedidoCaronaRepository.save(pedidoCarona);
+      return new ApiResponse(true,"Pedido recusado com sucesso");
+    }
 }

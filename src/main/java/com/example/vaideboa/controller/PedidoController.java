@@ -43,6 +43,17 @@ public class PedidoController {
         return ResponseEntity.ok(response.getMensagem());
     }
 
+    @PostMapping("/recusar/{id}")
+    public ResponseEntity<?> recusarPedido(@PathVariable Long id, Authentication auth){
+        String username = auth.getName();
+        ApiResponse response = pedidoService.recusarPedido(username, id);
+        if(!response.isRetorno()){
+            return ResponseEntity.badRequest().body(response.getMensagem());
+        }
+        return ResponseEntity.ok(response.getMensagem());
+    }
+
+
     @GetMapping("/buscar")
     public ResponseEntity<?> buscarPedidoCarona(Authentication auth){
         String username = auth.getName();
