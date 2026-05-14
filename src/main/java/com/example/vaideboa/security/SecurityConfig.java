@@ -43,6 +43,7 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
         http.csrf(csrf -> csrf.disable())
+            .cors(cors -> {})
             .authorizeHttpRequests(
                 auth -> auth.requestMatchers("/authenticate").permitAll()
                 .requestMatchers("/user/cadastrar").permitAll()
@@ -54,8 +55,8 @@ public class SecurityConfig {
                 .userInfoEndpoint(userInfo -> 
                     userInfo.userService(customOAuth2UserService)
                 )
-                .successHandler(oauth2SuccessHandler)
-            );
+                .successHandler(oauth2SuccessHandler));
+            
         return http.build();
     }
 
