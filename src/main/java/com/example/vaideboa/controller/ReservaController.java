@@ -27,7 +27,7 @@ public class ReservaController {
     public ResponseEntity<?> buscarCaronas(@RequestBody BuscaCaronaDto buscaDto){
         List<BuscaRetornaDto> buscasRetornoDto = reservaService.buscarCaronas(buscaDto);
         if(buscasRetornoDto.isEmpty()){
-            return ResponseEntity.badRequest().body("Erro ao buscar caronas");
+            return ResponseEntity.badRequest().body("Nenhuma carona encontrada");
         }
         return ResponseEntity.ok(buscasRetornoDto);
     }
