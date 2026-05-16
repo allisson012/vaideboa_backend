@@ -120,4 +120,6 @@ List<CaronaEmAndamentoDTO> buscarProximosParaEnviarCodigo(
     @Param("posicaoMotorista") Point posicao
 );
 
+List<Carona> findByMotoristaUsername(String username);
+
 }

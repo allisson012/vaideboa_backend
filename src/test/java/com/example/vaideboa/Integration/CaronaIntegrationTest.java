@@ -46,55 +46,51 @@ public class CaronaIntegrationTest {
     @Autowired
     private ReservaCodigoRepository reservaCodigoRepository;
 
-    @Test
-    void deveCadastrarCaronaRealmenteNoBanco() {
+   void deveCadastrarCaronaRealmenteNoBanco() {
 
-        // Arrange
-        User user = new User();
-        user.setUsername("joao123");
-        user.setAtivo(true);
+    User user = new User();
+    user.setUsername("joao123");
+    user.setAtivo(true);
 
-        userRepository.save(user);
+    userRepository.save(user);
 
-        CaronaDto dto = new CaronaDto(
-                3,
-                LocalDate.now().plusDays(1),
-                LocalTime.of(8, 0),
-                -22.9064,
-                -47.0626,
-                -23.5505,
-                -46.6333
-        );
+    CaronaDto dto = new CaronaDto(
+            3,
+            LocalDate.now().plusDays(1),
+            LocalTime.of(8, 0),
+            -22.9064,
+            -47.0626,
+            -23.5505,
+            -46.6333
+    );
 
-        // Act
-        boolean resultado =
-                caronaService.cadastrarCarona(dto, "joao123");
+    boolean resultado =
+            caronaService.cadastrarCarona(dto, "joao123");
 
-        // Assert
-        assertTrue(resultado);
+    assertTrue(resultado);
 
-        List<Carona> caronas =
-                caronaRepository.findAll();
+    List<Carona> caronas =
+            caronaRepository.findByMotoristaUsername("joao123");
 
-        assertFalse(caronas.isEmpty());
+    assertFalse(caronas.isEmpty());
 
-        Carona caronaSalva = caronas.get(0);
+    Carona caronaSalva = caronas.get(0);
 
-        assertEquals(3, caronaSalva.getQntAssentos());
+    assertEquals(3, caronaSalva.getQntAssentos());
 
-        assertEquals(
-                "joao123",
-                caronaSalva.getMotorista().getUsername()
-        );
+    assertEquals(
+            "joao123",
+            caronaSalva.getMotorista().getUsername()
+    );
 
-        assertNotNull(caronaSalva.getRota());
+    assertNotNull(caronaSalva.getRota());
 
-        assertNotNull(caronaSalva.getRota().getTrajeto());
+    assertNotNull(caronaSalva.getRota().getTrajeto());
 
-        assertNotNull(caronaSalva.getRota().getDistancia());
+    assertNotNull(caronaSalva.getRota().getDistancia());
 
-        assertNotNull(caronaSalva.getRota().getDuracao());
-    }
+    assertNotNull(caronaSalva.getRota().getDuracao());
+}
 
         @Test
     void deveIniciarCaronaEGerarCodigosUnicos() {
