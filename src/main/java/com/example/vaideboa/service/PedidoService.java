@@ -99,13 +99,18 @@ public class PedidoService {
       if(pedidoCarona.getStatus() != StatusPedido.PENDENTE){
         return new ApiResponse(false, "Pedido não pode mais ser alterado");
       }
+      if(pedidoCarona.getCarona().getVagasDisponiveis() == 0){
+        return new ApiResponse(false, "Veiculo não tem vagas disponiveis");
+      }
       pedidoCarona.setStatus(StatusPedido.ACEITO);
+      Carona carona = pedidoCarona.getCarona();
       Reserva reserva = new Reserva();
       reserva.setSaida(pedidoCarona.getSaida());
       reserva.setDestino(pedidoCarona.getDestino());
       reserva.setCarona(pedidoCarona.getCarona());
       reserva.setPassageiro(pedidoCarona.getPassageiro());
       reserva.setAprovado(true); // como ainda não tem pagamento estou deixando ele aprovado
+      carona.setVagasDisponiveis(carona.getVagasDisponiveis() - 1);
       // tenho que tirar um na vagas disponiveis da Carona
       reservaRepository.save(reserva);
       pedidoCaronaRepository.save(pedidoCarona);
