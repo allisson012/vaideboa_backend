@@ -1,12 +1,5 @@
 package com.example.vaideboa.scheduled;
 
-import java.util.List;
-
-import org.locationtech.jts.geom.Point;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-
-import com.example.vaideboa.Dtos.CaronaEmAndamentoDTO;
 import com.example.vaideboa.repository.CaronaRepository;
 
 //@Component

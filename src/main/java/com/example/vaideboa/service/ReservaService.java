@@ -2,7 +2,6 @@ package com.example.vaideboa.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Service;
 import com.example.vaideboa.Dtos.BuscaCaronaDto;
 import com.example.vaideboa.Dtos.BuscaRetornaDto;
 import com.example.vaideboa.model.Carona;
-import com.example.vaideboa.model.Rota;
 import com.example.vaideboa.repository.CaronaRepository;
 import com.example.vaideboa.repository.RotaRepository;
 

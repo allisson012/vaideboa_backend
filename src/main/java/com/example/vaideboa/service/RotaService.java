@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
@@ -124,8 +123,7 @@ public class RotaService {
     }
 
     public List<Map<String, Double>> retornarParaFront(Long id){
-        Optional<Rota> rotaOpt = rotaRepository.findById(id);
-        Rota rota = rotaOpt.get();
+        Rota rota = rotaRepository.findById(id).orElseThrow(() -> new RuntimeException("Rota não encontrada"));
         return rotaMapperService.toReactNative(rota.getTrajeto());
     }
 

@@ -1,6 +1,5 @@
 package com.example.vaideboa.service;
 
-import com.example.vaideboa.controller.PedidoController;
 import com.example.vaideboa.repository.ReservaRepository;
 
 import java.time.LocalDate;

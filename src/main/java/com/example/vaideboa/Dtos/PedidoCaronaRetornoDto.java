@@ -1,7 +1,5 @@
 package com.example.vaideboa.Dtos;
 
-import org.locationtech.jts.geom.Point;
-import org.springframework.cglib.core.Local;
 
 public class PedidoCaronaRetornoDto {
     private Long idUser;

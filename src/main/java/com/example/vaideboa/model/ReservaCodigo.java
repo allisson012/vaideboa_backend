@@ -1,6 +1,5 @@
 package com.example.vaideboa.model;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;

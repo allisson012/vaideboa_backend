@@ -1,6 +1,5 @@
 package com.example.vaideboa.exception;
 
-import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
