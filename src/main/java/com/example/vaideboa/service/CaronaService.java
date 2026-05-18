@@ -236,7 +236,6 @@ public class CaronaService {
     if(carona == null){
       return new ApiResponse(false,"Carona não encontrada");
     }
-
     if(!carona.getMotorista().getId().equals(user.getId())){
       return new ApiResponse(false,"Usuário não tem acesso a essa carona");
     }

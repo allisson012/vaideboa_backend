@@ -48,6 +48,7 @@ public class SecurityConfig {
                 auth -> auth.requestMatchers("/authenticate").permitAll()
                 .requestMatchers("/user/cadastrar").permitAll()
                 .requestMatchers("/oauth2/**", "/login/**").permitAll()
+                .requestMatchers("/validarToken").permitAll()
                 .anyRequest().authenticated())
             .oauth2ResourceServer(
                 conf -> conf.jwt(Customizer.withDefaults()))
