@@ -4,6 +4,7 @@ import com.example.vaideboa.repository.CaronaRepository;
 import com.example.vaideboa.repository.RotaRepository;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -242,12 +243,16 @@ public class CaronaService {
     if(!carona.getData().equals(LocalDate.now())){
       return new ApiResponse(false,"Carona fora da data agendada");
     }
-    // vou colocar validação de hora vai ter uma faixa de horario para poder iniciar
-      // LocalTime agora = LocalTime.now();
-      // if (agora.isBefore(carona.getHoraInicio())) {
-      //     return new ApiResponse(false, "Ainda não é horário de iniciar a carona");
-      // }
-    // tambem não sei se faço validação do local onde ele esta 
+    LocalTime agora = LocalTime.now();
+    LocalTime horaSuperior = agora;
+    horaSuperior = horaSuperior.plusMinutes(60);
+    LocalTime horaInferior = agora.minusMinutes(20);
+    if(agora.isBefore(horaInferior)){
+      return new ApiResponse(false,"Ainda não é possível iniciar a carona. Aguarde o horário permitido.");
+    }
+    if(agora.isAfter(horaSuperior)){
+      return new ApiResponse(false,"Não é mais possível iniciar a carona. O horário limite foi excedido.");
+    } 
     carona.setStatusCarona(StatusCarona.EM_ANDAMENTO);
     ApiResponse retorno = codigoService.gerarCodigos(carona.getReservas());
     if(!retorno.isRetorno()){
