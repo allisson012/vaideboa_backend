@@ -243,9 +243,10 @@ public class CaronaService {
       return new ApiResponse(false,"Carona fora da data agendada");
     }
     LocalTime agora = LocalTime.now();
-    LocalTime horaSuperior = agora;
-    horaSuperior = horaSuperior.plusMinutes(60);
-    LocalTime horaInferior = agora.minusMinutes(20);
+    LocalTime horarioCarona = carona.getHora();
+
+    LocalTime horaInferior = horarioCarona.minusMinutes(20);
+    LocalTime horaSuperior = horarioCarona.plusMinutes(60);
     if(agora.isBefore(horaInferior)){
       return new ApiResponse(false,"Ainda não é possível iniciar a carona. Aguarde o horário permitido.");
     }
