@@ -62,9 +62,10 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/vaideboa_test
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: postgres
-        run: mvn test
+        run: mvn test -e -X
 
       - name: Mostrar logs se falhar
         if: failure()
         run: |
-          find . -path "*surefire-reports*" -type f -exec cat {} \;
+          echo "====== APPLICATION LOGS ======"
+          find target/surefire-reports -type f -exec cat {} \;
