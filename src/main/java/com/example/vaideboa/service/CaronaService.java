@@ -67,6 +67,7 @@ public class CaronaService {
       Point destino = geometryFactory.createPoint(
         new Coordinate(caronaDto.getDestinoLng(), caronaDto.getDestinoLat())
       );
+      carona.setStatusCarona(StatusCarona.EM_ESPERA);
       rota.setSaida(saida);
       rota.setDestino(destino);
       String geojson = rotaService.getRota(saida, destino);
