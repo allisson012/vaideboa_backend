@@ -30,4 +30,9 @@ public class AuthenticationService {
 
         return jwtService.generateToken(authentication);
     }
+
+    public boolean tokenValido(String token) {
+    return jwtService.tokenValido(token);
+    }
+
 }

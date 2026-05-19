@@ -4,6 +4,7 @@ import com.example.vaideboa.repository.CaronaRepository;
 import com.example.vaideboa.repository.RotaRepository;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -66,6 +67,7 @@ public class CaronaService {
       Point destino = geometryFactory.createPoint(
         new Coordinate(caronaDto.getDestinoLng(), caronaDto.getDestinoLat())
       );
+      carona.setStatusCarona(StatusCarona.EM_ESPERA);
       rota.setSaida(saida);
       rota.setDestino(destino);
       String geojson = rotaService.getRota(saida, destino);
@@ -235,19 +237,23 @@ public class CaronaService {
     if(carona == null){
       return new ApiResponse(false,"Carona não encontrada");
     }
-
     if(!carona.getMotorista().getId().equals(user.getId())){
       return new ApiResponse(false,"Usuário não tem acesso a essa carona");
     }
     if(!carona.getData().equals(LocalDate.now())){
       return new ApiResponse(false,"Carona fora da data agendada");
     }
-    // vou colocar validação de hora vai ter uma faixa de horario para poder iniciar
-      // LocalTime agora = LocalTime.now();
-      // if (agora.isBefore(carona.getHoraInicio())) {
-      //     return new ApiResponse(false, "Ainda não é horário de iniciar a carona");
-      // }
-    // tambem não sei se faço validação do local onde ele esta 
+    LocalTime agora = LocalTime.now();
+    LocalTime horarioCarona = carona.getHora();
+
+    LocalTime horaInferior = horarioCarona.minusMinutes(20);
+    LocalTime horaSuperior = horarioCarona.plusMinutes(60);
+    if(agora.isBefore(horaInferior)){
+      return new ApiResponse(false,"Ainda não é possível iniciar a carona. Aguarde o horário permitido.");
+    }
+    if(agora.isAfter(horaSuperior)){
+      return new ApiResponse(false,"Não é mais possível iniciar a carona. O horário limite foi excedido.");
+    } 
     carona.setStatusCarona(StatusCarona.EM_ANDAMENTO);
     ApiResponse retorno = codigoService.gerarCodigos(carona.getReservas());
     if(!retorno.isRetorno()){
