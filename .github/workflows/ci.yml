@@ -14,7 +14,7 @@ jobs:
         image: postgis/postgis:15-3.4
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_PASSWORD: 123456
           POSTGRES_DB: vaideboa_test
         ports:
           - 5432:5432
@@ -40,17 +40,10 @@ jobs:
             echo "Aguardando PostgreSQL..."
             sleep 2
           done
-          
-      - name: Criar extensões PostGIS
-        env:
-          PGPASSWORD: postgres
-        run: |
-          psql -h localhost -U postgres -d vaideboa_test -c "CREATE EXTENSION IF NOT EXISTS postgis;"
-          psql -h localhost -U postgres -d vaideboa_test -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;"
 
       - name: Importar backup SQL
         env:
-          PGPASSWORD: postgres
+          PGPASSWORD: 123456
         run: |
           psql -h localhost -U postgres -d vaideboa_test -f .github/workflows/backup_vaideboa_test.sql
 
@@ -61,11 +54,11 @@ jobs:
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/vaideboa_test
           SPRING_DATASOURCE_USERNAME: postgres
-          SPRING_DATASOURCE_PASSWORD: postgres
-        run: mvn test -e -X
+          SPRING_DATASOURCE_PASSWORD: 123456
+          API_KEY: teste
+        run: mvn test
 
       - name: Mostrar logs se falhar
         if: failure()
         run: |
-          echo "====== APPLICATION LOGS ======"
-          find target/surefire-reports -type f -exec cat {} \;
+          find . -path "*surefire-reports*" -type f -exec cat {} \;
