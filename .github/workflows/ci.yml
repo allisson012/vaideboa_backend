@@ -40,6 +40,13 @@ jobs:
             echo "Aguardando PostgreSQL..."
             sleep 2
           done
+          
+      - name: Criar extensões PostGIS
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -d vaideboa_test -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+          psql -h localhost -U postgres -d vaideboa_test -c "CREATE EXTENSION IF NOT EXISTS postgis_topology;"
 
       - name: Importar backup SQL
         env:
