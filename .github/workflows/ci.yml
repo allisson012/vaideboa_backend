@@ -62,12 +62,13 @@ jobs:
           mkdir -p src/main/resources
           echo "${{ secrets.APP_KEY }}" > src/main/resources/app.key
 
-      - name: Verificar arquivos JWT
+      - name: Verificar resources
         run: |
           ls -la src/main/resources
 
       - name: Build Maven
         env:
+          API_KEY: ${{ secrets.API_KEY }}
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/vaideboa_test
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: 123456
@@ -75,6 +76,7 @@ jobs:
 
       - name: Rodar testes
         env:
+          API_KEY: ${{ secrets.API_KEY }}
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/vaideboa_test
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: 123456
