@@ -11,6 +11,5 @@ public class PreferenciasDto {
     private final NivelPreferencia conversa;
     private final NivelPreferencia musica;
     private final NivelPreferencia cigarro;
-    private final NivelPreferencia animais;
-    
+    private final NivelPreferencia animais;    
 }

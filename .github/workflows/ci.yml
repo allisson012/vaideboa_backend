@@ -22,17 +22,23 @@ jobs:
           --health-cmd="pg_isready -U postgres -d vaideboa_test"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=5
+          --health-retries=10
 
     steps:
       - name: Clonar repositório
         uses: actions/checkout@v4
 
-      - name: Configurar Java
+      - name: Configurar Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
+          cache: maven
+
+      - name: Instalar cliente PostgreSQL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
 
       - name: Aguardar PostgreSQL
         run: |
@@ -45,9 +51,26 @@ jobs:
         env:
           PGPASSWORD: 123456
         run: |
-          psql -h localhost -U postgres -d vaideboa_test -f .github/workflows/backup_vaideboa_test.sql
+          psql \
+            -h localhost \
+            -U postgres \
+            -d vaideboa_test \
+            -f .github/workflows/backup_vaideboa_test.sql
+
+      - name: Criar chave privada JWT
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.APP_KEY }}" > src/main/resources/app.key
+
+      - name: Verificar arquivos JWT
+        run: |
+          ls -la src/main/resources
 
       - name: Build Maven
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/vaideboa_test
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: 123456
         run: mvn clean install -DskipTests
 
       - name: Rodar testes
@@ -55,7 +78,6 @@ jobs:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/vaideboa_test
           SPRING_DATASOURCE_USERNAME: postgres
           SPRING_DATASOURCE_PASSWORD: 123456
-          API_KEY: teste
         run: mvn test
 
       - name: Mostrar logs se falhar
