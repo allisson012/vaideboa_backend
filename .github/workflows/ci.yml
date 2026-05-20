@@ -1,0 +1,88 @@
+name: Java CI
+
+on:
+  push:
+    branches:
+      - testes
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:15-3.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: 123456
+          POSTGRES_DB: vaideboa_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d vaideboa_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Clonar repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: maven
+
+      - name: Instalar cliente PostgreSQL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Aguardar PostgreSQL
+        run: |
+          until pg_isready -h localhost -U postgres -d vaideboa_test; do
+            echo "Aguardando PostgreSQL..."
+            sleep 2
+          done
+
+      - name: Importar backup SQL
+        env:
+          PGPASSWORD: 123456
+        run: |
+          psql \
+            -h localhost \
+            -U postgres \
+            -d vaideboa_test \
+            -f .github/workflows/backup_vaideboa_test.sql
+
+      - name: Criar chave privada JWT
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.APP_KEY }}" > src/main/resources/app.key
+
+      - name: Verificar resources
+        run: |
+          ls -la src/main/resources
+
+      - name: Build Maven
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/vaideboa_test
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: 123456
+        run: mvn clean install -DskipTests
+
+      - name: Rodar testes
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/vaideboa_test
+          SPRING_DATASOURCE_USERNAME: postgres
+          SPRING_DATASOURCE_PASSWORD: 123456
+        run: mvn test
+
+      - name: Mostrar logs se falhar
+        if: failure()
+        run: |
+          find . -path "*surefire-reports*" -type f -exec cat {} \;
