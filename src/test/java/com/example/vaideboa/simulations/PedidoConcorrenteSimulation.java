@@ -15,7 +15,7 @@ public class PedidoConcorrenteSimulation extends Simulation {
 
     FeederBuilder.FileBased<String> feeder =
             csv("users.csv").circular();
-
+   // teste
     ScenarioBuilder scn = scenario("Pedido de Carona concorrente")
 
             .feed(feeder)
