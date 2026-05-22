@@ -148,10 +148,13 @@ public class CaronaServiceTest {
         when(geoService.reverseGeocode(anyDouble(), anyDouble())).thenReturn("Endereço");
         when(rotaRepository.save(any())).thenReturn(rotaSalva);
         when(caronaRepository.save(any())).thenAnswer(inv -> {
-           
-            assertEquals(1, c.getQntAssentos());
-            assertEquals(1, c.getVagasDisponiveis());
-            return c;
+
+        Carona c = inv.getArgument(0);
+
+        assertEquals(1, c.getQntAssentos());
+        assertEquals(1, c.getVagasDisponiveis());
+
+        return c;
         });
 
       
