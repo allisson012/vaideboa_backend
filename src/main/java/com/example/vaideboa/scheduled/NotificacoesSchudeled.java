@@ -28,63 +28,89 @@ public class NotificacoesSchudeled {
         this.emailService = emailService;
     }
 
-    // ta funcionando so falta notificar o dono da carona 
-    // notifica as caronas que estão dentro de uma hora do horario de começo dela e garante que ele ainda não foi validada
-    @Transactional
-    @Scheduled(fixedRate = 300000)
-    public void verificarCaronasEnotificar(){
-        LocalDate data = LocalDate.now();
-        LocalTime horaAgora = LocalTime.now();
-        LocalTime horaEm1h = horaAgora.plusHours(1);
-        List<Carona> caronas = caronaRepository.findByDataAndHoraBetweenAndNotificado1hFalse(data, horaAgora, horaEm1h);
+    // notifica as caronas que estão dentro de uma hora do horario de começo dela e garante que ela ainda não foi validada
+@Transactional
+@Scheduled(fixedRate = 300000)
+public void verificarCaronasEnotificar() {
 
-        for (Carona carona : caronas) {
-            List<Reserva> reservas = carona.getReservas();
-            for(Reserva reserva : reservas){
-            String token = reserva.getPassageiro().getToken(); // tem que salvar antes o token do expo vindo do front
-            token ="hjhsdhs"; 
-                // fiz so para simular o token que estar cadastrado
-            if (token != null) {
+    LocalDate data = LocalDate.now();
+    LocalTime horaAgora = LocalTime.now();
+    LocalTime horaEm1h = horaAgora.plusHours(1);
 
-                String tituloEmail = "🚗 Falta 1 hora para sua carona";
-                
-                String mensagemEmail = """
-                    Olá, %s!
+    List<Carona> caronas =
+            caronaRepository.findByDataAndHoraBetweenAndNotificado1hFalse(
+                    data,
+                    horaAgora,
+                    horaEm1h
+            );
 
-                    Sua carona começará em aproximadamente 1 hora.
+    for (Carona carona : caronas) {
 
-                    📍 Saída: %s
-                    🕒 Horário: %s
+        // motorista
+        enviarNotificacao(
+                carona.getMotorista().getNome(),
+                carona.getMotorista().getUsername(),
+                //token = carona.getMotorista().getToken();
+                "hjhsdhs", // token mockado
+                carona
+        );
 
-                    Confira os detalhes da viagem no aplicativo para evitar atrasos.
+        // passageiros
+        for (Reserva reserva : carona.getReservas()) {
 
-                    Boa viagem! 🚗
-
-                    Equipe VaiDeBoa
-                    """.formatted(
-                        reserva.getPassageiro().getNome(),
-                        carona.getRota().getSaidaTexto(),
-                        carona.getHora()
-                    );
-
-                    emailService.enviarEmail(
-                        mensagemEmail,
-                        tituloEmail,
-                        reserva.getPassageiro().getUsername()
-                    );
-
-                    notificacoesService.enviarPushExpo(
-                        token,
-                        "🚗 Sua carona começa em 1 hora!",
-                        "📍 " + carona.getRota().getSaidaTexto() +
-                        " • 🕒 " + carona.getHora()
-                    );
-                }
-            }
-        
-            carona.setNotificado1h(true);
-            caronaRepository.save(carona);
+            enviarNotificacao(
+                    reserva.getPassageiro().getNome(),
+                    reserva.getPassageiro().getUsername(),
+                    // token = reserva.getPassageiro().getToken();
+                    "hjhsdhs", // token mockado
+                    carona
+            );
         }
+
+        carona.setNotificado1h(true);
+        caronaRepository.save(carona);
     }
-    
+}
+
+private void enviarNotificacao(String nome,String email,String token,Carona carona){
+
+    if (token == null) {
+        return;
+    }
+
+    String titulo = "🚗 Falta 1 hora para sua carona";
+
+    String mensagem = """
+            Olá, %s!
+
+            Sua carona começará em aproximadamente 1 hora.
+
+            📍 Saída: %s
+            🕒 Horário: %s
+
+            Confira os detalhes da viagem no aplicativo para evitar atrasos.
+
+            Boa viagem! 🚗
+
+            Equipe VaiDeBoa
+            """.formatted(
+            nome,
+            carona.getRota().getSaidaTexto(),
+            carona.getHora()
+    );
+
+    emailService.enviarEmail(
+            mensagem,
+            titulo,
+            email
+    );
+
+    notificacoesService.enviarPushExpo(
+            token,
+            titulo,
+            "📍 " + carona.getRota().getSaidaTexto() +
+                    " • 🕒 " + carona.getHora()
+    );
+}
+
 }

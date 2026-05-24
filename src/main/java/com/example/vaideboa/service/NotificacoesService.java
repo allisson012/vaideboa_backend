@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class NotificacoesService {
     public void enviarPushExpo(String token, String titulo, String mensagem){
+        //
         System.out.println("Enviando notificação com " + titulo  + " mensagem = " +mensagem);
     }
 }
