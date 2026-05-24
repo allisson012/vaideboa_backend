@@ -20,10 +20,13 @@ import com.example.vaideboa.repository.ReservaRepository;
 public class CodigoService {
     private final ReservaCodigoRepository reservaCodigoRepository;
     private final ReservaRepository reservaRepository;
+    private final EmailService emailService;
     
-    public CodigoService(ReservaCodigoRepository reservaCodigoRepository, ReservaRepository reservaRepository) {
+    public CodigoService(ReservaCodigoRepository reservaCodigoRepository, ReservaRepository reservaRepository,
+            EmailService emailService) {
         this.reservaCodigoRepository = reservaCodigoRepository;
         this.reservaRepository = reservaRepository;
+        this.emailService = emailService;
     }
 
     public ApiResponse gerarCodigos(List<Reserva> reservas){
@@ -52,6 +55,8 @@ public class CodigoService {
 
                 ReservaCodigo reservaCodigo = new ReservaCodigo();
                 reservaCodigo.setCodigoEmbarque(codigoEmbarque);
+                enviarCodigo(reserva.getPassageiro().getNome(), codigoEmbarque, reserva.getPassageiro().getUsername());
+                reservaCodigo.setEmbarqueLiberado(true);
                 reservaCodigo.setCodigoDesembarque(codigoDesembarque);
                 reservaCodigo.setCriadoEm(LocalDateTime.now());
 
@@ -69,5 +74,40 @@ public class CodigoService {
             e.printStackTrace();
             return new ApiResponse(false, "Erro ao gerar códigos");
         }
+    }
+
+    private void enviarCodigo(String nome, String codigo, String emailUsuario){
+        String assunto = "🚗 Código de embarque da sua carona";
+
+        String mensagem = """
+            Olá, %s!
+
+            Sua carona está pronta para começar.
+
+            🔐 Código de embarque: %s
+
+            ⚠️ IMPORTANTE:
+            Informe este código somente após entrar no veículo.
+
+            O código confirma sua presença na carona.
+            Caso ele não seja informado, sua reserva poderá ser marcada como não compareceu.
+
+            Após informar o código, a presença na carona será considerada confirmada pelo sistema.
+            Portanto, não informe o código antes de realmente entrar no veículo.
+
+            Boa viagem! 🚗
+
+            Equipe VaiDeBoa
+            """.formatted(
+                nome,
+                codigo
+        );
+
+        emailService.enviarEmail(
+            mensagem,
+            assunto,
+            emailUsuario
+        );
+        // posso enviar mensagem pelo expo notification tambem
     }
 }
