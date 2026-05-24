@@ -1,16 +1,16 @@
 package com.example.vaideboa.model.enums;
 
-public enum TipoEvento {
+public enum StatusReserva {
+    PENDENTE("Pendente"),
     EMBARQUE_LIBERADO("Embarque Liberado"),
     EMBARCADO("Embarcado"),
-    DESEMBARQUE_LIBERADO("Desembarque Liberado"),
-    DESEMBARCADO("Desembarcado"),
-    NAO_COMPARECEU("Não Compareceu"),
-    DESEMBARQUE_CONFIRMADO_SISTEMA("Confirmado pelo sistema");
+    CONCLUIDA_USUARIO("Concluida pelo usuario"),
+    CONCLUIDA_SISTEMA("Concluida pelo sistema"),
+    NAO_COMPARECEU("Não compareceu");
 
     private final String descricao;
 
-    TipoEvento(String descricao){
+    StatusReserva(String descricao){
         this.descricao = descricao;
     }
 
