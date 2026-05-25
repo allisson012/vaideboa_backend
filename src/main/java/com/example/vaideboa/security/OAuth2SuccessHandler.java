@@ -30,30 +30,37 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
-        String email = oauthUser.getAttribute("email");
-        User user = userRepository.findByUsernameAndAtivoTrue(email).orElseThrow();
-        Instant now = Instant.now();
-
-        JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("vaideboa")
-                .subject(user.getUsername())
-                .issuedAt(now)
-                .expiresAt(now.plusSeconds(86400))
-                .claim("id", user.getId())
-                .claim("nome", user.getNome())
-                .build();
-        
-        String token = jwtEncoder.encode(
-            JwtEncoderParameters.from(claims)
-        ).getTokenValue();
-        response.setContentType("application/json");
-        response.getWriter().write(
-            """
-            {
-                "token": "%s"
-            }        
-            """.formatted(token)
-        );
+            OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
+            String email = oauthUser.getAttribute("email");
+            String nome = oauthUser.getAttribute("name");
+            User user = userRepository.findByUsernameAndAtivoTrue(email)
+                    .orElseGet(() -> {
+                        User novoUsuario = new User();
+                        novoUsuario.setUsername(email);
+                        novoUsuario.setNome(nome);
+                        novoUsuario.setAtivo(true);
+                        novoUsuario.setContaNaoBloqueada(true);
+                        novoUsuario.setContaNaoExpirada(true);
+                        novoUsuario.setCredenciaisNaoExpiradas(true);
+                        return userRepository.save(novoUsuario);
+                    });
+            Instant now = Instant.now();
+            JwtClaimsSet claims = JwtClaimsSet.builder()
+                    .issuer("vaideboa")
+                    .subject(user.getUsername())
+                    .issuedAt(now)
+                    .expiresAt(now.plusSeconds(86400))
+                    .claim("id", user.getId())
+                    .claim("nome", user.getNome())
+                    .build();
+            String token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+            response.setContentType("application/json");
+            response.getWriter().write(
+                    """
+                    {
+                        "token": "%s"
+                    }
+                    """.formatted(token)
+            );
     }
 }
