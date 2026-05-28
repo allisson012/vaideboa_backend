@@ -86,4 +86,8 @@ public class UserController {
         }
         return ResponseEntity.ok(retorno.getDados());
     }
+
+    public ResponseEntity<?> reativarConta(){
+        return null;
+    }
 }
