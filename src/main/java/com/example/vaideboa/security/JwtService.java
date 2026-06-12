@@ -55,5 +55,9 @@ public class JwtService {
     } catch (JwtException e) {
         return false;
     }
+    
+    }
+    public Jwt decode(String token) {
+        return decoder.decode(token); 
     }
 }
