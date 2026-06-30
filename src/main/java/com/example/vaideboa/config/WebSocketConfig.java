@@ -21,11 +21,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer{
         config.setApplicationDestinationPrefixes("/app");
         config.setUserDestinationPrefix("/user");
     }
-
+    
+     // para ficar mais facil deixei para qualquer lugar poder enviar mas vou restringir para nosso app
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*");
+                .setAllowedOriginPatterns("*"); 
     }
 
     @Override

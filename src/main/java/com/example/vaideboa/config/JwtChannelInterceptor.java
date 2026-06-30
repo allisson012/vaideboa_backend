@@ -37,23 +37,22 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
                 throw new MessageDeliveryException("Token ausente");
             }
 
-            String token = authHeader.substring(7); // remove "Bearer "
+            String token = authHeader.substring(7);
 
-            // usa seu método já existente
+            
             if (!jwtService.tokenValido(token)) {
                 throw new MessageDeliveryException("Token inválido ou expirado");
             }
 
-            // extrai o username usando seu decoder já existente
             Jwt jwt = jwtService.decode(token);
-            String username = jwt.getSubject(); // claim "sub" que você seta
+            String username = jwt.getSubject();
 
             UsernamePasswordAuthenticationToken auth =
                 new UsernamePasswordAuthenticationToken(
                     username, null, List.of()
                 );
 
-            accessor.setUser(auth); // Spring passa a conhecer quem é esse socket
+            accessor.setUser(auth);
         }
 
         return message;

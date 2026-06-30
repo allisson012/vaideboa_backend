@@ -15,13 +15,20 @@ import com.example.vaideboa.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
+
 public class ExpoNotificationService {
 
     private final RestTemplate restTemplate;
     private final UserRepository userRepository;
 
     private static final String EXPO_API = "https://exp.host/--/api/v2/push/send";
+
+    
+    public ExpoNotificationService(RestTemplate restTemplate, UserRepository userRepository) {
+        this.restTemplate = restTemplate;
+        this.userRepository = userRepository;
+    }
+
 
     public void enviar(String username, String titulo, String corpo) {
         // busca o token salvo do usuário
