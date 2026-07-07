@@ -11,24 +11,20 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.Reserva;
 import com.example.vaideboa.repository.CaronaRepository;
-import com.example.vaideboa.service.EmailService;
 import com.example.vaideboa.service.NotificacoesService;
 
 @Component
 public class NotificacoesSchudeled {
-    
+
     private final CaronaRepository caronaRepository;
     private final NotificacoesService notificacoesService;
-    private final EmailService emailService;
+    
 
-    public NotificacoesSchudeled(CaronaRepository caronaRepository, NotificacoesService notificacoesService,
-            EmailService emailService) {
+    public NotificacoesSchudeled(CaronaRepository caronaRepository, NotificacoesService notificacoesService) {
         this.caronaRepository = caronaRepository;
         this.notificacoesService = notificacoesService;
-        this.emailService = emailService;
-    }
+}
 
-    // notifica as caronas que estão dentro de uma hora do horario de começo dela e garante que ela ainda não foi validada
     @Transactional
     @Scheduled(fixedRate = 300000)
     public void verificarCaronasEnotificar() {
@@ -41,28 +37,21 @@ public class NotificacoesSchudeled {
                 caronaRepository.findByDataAndHoraBetweenAndNotificado1hFalse(
                         data,
                         horaAgora,
-                        horaEm1h
-                );
+                        horaEm1h);
 
         for (Carona carona : caronas) {
 
-            // motorista
-            enviarNotificacao(
+            notificarUsuario(
                     carona.getMotorista().getNome(),
                     carona.getMotorista().getUsername(),
-                    //token = carona.getMotorista().getToken();
-                    "hjhsdhs", // token mockado
                     carona
             );
 
-            // passageiros
             for (Reserva reserva : carona.getReservas()) {
 
-                enviarNotificacao(
+                notificarUsuario(
                         reserva.getPassageiro().getNome(),
                         reserva.getPassageiro().getUsername(),
-                        // token = reserva.getPassageiro().getToken();
-                        "hjhsdhs", // token mockado
                         carona
                 );
             }
@@ -72,15 +61,14 @@ public class NotificacoesSchudeled {
         }
     }
 
-    private void enviarNotificacao(String nome,String email,String token,Carona carona){
-
-        if (token == null) {
-            return;
-        }
+    private void notificarUsuario(
+            String nome,
+            String username,
+            Carona carona) {
 
         String titulo = "🚗 Falta 1 hora para sua carona";
 
-        String mensagem = """
+        String email = """
                 Olá, %s!
 
                 Sua carona começará em aproximadamente 1 hora.
@@ -99,18 +87,17 @@ public class NotificacoesSchudeled {
                 carona.getHora()
         );
 
-        emailService.enviarEmail(
-                mensagem,
-                titulo,
-                email
-        );
+        String notificacao = "📍 "
+                + carona.getRota().getSaidaTexto()
+                + " • 🕒 "
+                + carona.getHora();
 
-        notificacoesService.enviarPushExpo(
-                token,
+
+        notificacoesService.enviarNotificacao(
+                username,
                 titulo,
-                "📍 " + carona.getRota().getSaidaTexto() +
-                        " • 🕒 " + carona.getHora()
+                email,
+                notificacao
         );
     }
-
 }
