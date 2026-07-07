@@ -31,7 +31,11 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
         if (accessor == null) return message;
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+            
             String authHeader = accessor.getFirstNativeHeader("Authorization");
+            System.out.println("CONNECT recebido");
+
+            System.out.println(authHeader);
 
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 throw new MessageDeliveryException("Token ausente");
