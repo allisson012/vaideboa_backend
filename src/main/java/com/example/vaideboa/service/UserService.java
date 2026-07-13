@@ -45,6 +45,7 @@ public class UserService {
         User user = new User();
         user.setNome(userDto.getNome());
         user.setUsername(userDto.getUsername());
+        // validar se a senha corresponde a estrutura definida letra maiscula etc
         user.setPassword(senhaCriptografada);
         user.setAtivo(true);
         user.setContaNaoBloqueada(true);
@@ -207,4 +208,5 @@ public class UserService {
         userRepository.save(user);
         return new ApiResponse(true, "Preferências atualizadas com sucesso", pref);
     }
+
 }

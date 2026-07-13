@@ -47,6 +47,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(
                 auth -> auth.requestMatchers("/authenticate").permitAll()
                 .requestMatchers("/user/cadastrar").permitAll()
+                .requestMatchers("/recuperarSenha/**").permitAll()
                 .requestMatchers("/oauth2/**", "/login/**").permitAll()
                 .requestMatchers("/validarToken","/ws/**","/ws").permitAll()
                 .anyRequest().authenticated())
