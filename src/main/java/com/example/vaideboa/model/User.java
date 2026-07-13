@@ -64,7 +64,11 @@ public class User {
     @JsonIgnore
     @OneToOne(cascade = CascadeType.ALL)
     private Preferencias preferencia;
+    @JsonIgnore
     @OneToMany(mappedBy = "dono")
     private List<Carro> meusCarros;
     private String token;
+    @JsonIgnore
+    @OneToMany(mappedBy = "user")
+    private List<RecuperarSenha> minhasRecuperacoes;
 }

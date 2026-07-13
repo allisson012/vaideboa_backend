@@ -1,6 +1,7 @@
 package com.example.vaideboa.security;
 
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.stream.Collectors;
 
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -12,6 +13,8 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.stereotype.Service;
+
+import com.example.vaideboa.model.RecuperarSenha;
 
 
 
@@ -59,5 +62,39 @@ public class JwtService {
     }
     public Jwt decode(String token) {
         return decoder.decode(token); 
+    }
+    
+    public String generatePasswordResetToken(RecuperarSenha recuperarSenha) {
+    Instant now = Instant.now();
+    var claims = JwtClaimsSet.builder()
+            .issuer("vaideboa")
+            .issuedAt(now)
+            .expiresAt(recuperarSenha.getExpiresAt().atZone(ZoneId.systemDefault()).toInstant())
+            .subject(recuperarSenha.getUser().getUsername())
+            .claim("type", "PASSWORD_RESET")
+            .claim("recoveryId", recuperarSenha.getId())
+            .build();
+
+    return encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+    }
+
+    public boolean isPasswordResetToken(String token){
+        try{
+            Jwt jwt = decoder.decode(token);
+            return "PASSWORD_RESET".equals(jwt.getClaimAsString("type"))
+                    && jwt.getExpiresAt().isAfter(Instant.now());
+        }catch(JwtException e){
+            return false;
+        }
+    }
+
+    public Long getRecoveryId(String token){
+        Jwt jwt = decoder.decode(token);
+        return jwt.getClaim("recoveryId");
+    }
+
+    public String getEmail(String token){
+        Jwt jwt = decoder.decode(token);
+        return jwt.getSubject();
     }
 }
