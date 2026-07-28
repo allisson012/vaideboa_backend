@@ -61,6 +61,27 @@ public class RotaService {
         return response.getBody();
     }
 
+    public String getRotaComParadas(List<List<Double>> coordinates) {
+
+        String url = "https://api.openrouteservice.org/v2/directions/driving-car/geojson";
+        //  https://api.openrouteservice.org/v2/directions/driving-car
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + apiKey);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("coordinates", coordinates);
+
+        HttpEntity<Map<String, Object>> request =
+                new HttpEntity<>(body, headers);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+        // aqui eu posso enviar para meu banco como uma lineString
+        return response.getBody();
+    }
+
     public String calcularDistancia(Point saida, Point destino){
         String url = "https://api.openrouteservice.org/v2/directions/driving-car/geojson";
         RestTemplate restTemplate = new RestTemplate();

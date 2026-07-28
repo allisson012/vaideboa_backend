@@ -2,6 +2,7 @@ package com.example.vaideboa.Dtos;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 public class CaronaDto {
     private final int qntAssentos;
@@ -11,8 +12,10 @@ public class CaronaDto {
     private final double saidaLng;
     private final double destinoLat;
     private final double destinoLng;
+    private final List<ParadaDto> paradas;
+
     public CaronaDto(int qntAssentos, LocalDate data, LocalTime hora, double saidaLat, double saidaLng,
-            double destinoLat, double destinoLng) {
+            double destinoLat, double destinoLng, List<ParadaDto> paradas) {
         this.qntAssentos = qntAssentos;
         this.data = data;
         this.hora = hora;
@@ -20,8 +23,9 @@ public class CaronaDto {
         this.saidaLng = saidaLng;
         this.destinoLat = destinoLat;
         this.destinoLng = destinoLng;
+        this.paradas = paradas;
     }
-
+    
     public int getQntAssentos() {
         return qntAssentos;
     }
@@ -43,7 +47,8 @@ public class CaronaDto {
     public double getDestinoLng() {
         return destinoLng;
     }
-    
-    
-    
+
+    public List<ParadaDto> getParadas() {
+        return paradas;
+    }    
 }

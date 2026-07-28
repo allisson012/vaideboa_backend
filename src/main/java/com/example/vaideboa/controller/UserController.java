@@ -15,10 +15,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.vaideboa.Dtos.AlterarSenhaDto;
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.EditarUserDto;
+import com.example.vaideboa.Dtos.PreferenciasDto;
 import com.example.vaideboa.Dtos.UserDto;
 import com.example.vaideboa.Dtos.UserRetornoDto;
-import com.example.vaideboa.Dtos.PreferenciasDto;
-
 import com.example.vaideboa.service.UserService;
 
 
