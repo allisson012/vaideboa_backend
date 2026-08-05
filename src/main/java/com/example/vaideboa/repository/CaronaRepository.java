@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import com.example.vaideboa.Dtos.CaronaEmAndamentoDTO;
 import com.example.vaideboa.model.Carona;
+import com.example.vaideboa.model.PontoParada;
 import com.example.vaideboa.model.Rota;
 import com.example.vaideboa.model.User;
 
@@ -45,6 +46,9 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
 
     List<Carona> findByMotoristaAndDataGreaterThanEqual(User motorista, LocalDate data);
 
+
+
+    // raio de distancia é 500 m estou pensando em deixar isso fixo 
     @Query(value = """
     SELECT c.*
     FROM carona c
@@ -53,13 +57,13 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
     ST_DWithin(
         r.trajeto::geography,
         ST_SetSRID(:saida, 4326)::geography,
-        10000
+        500
     )
     AND
     ST_DWithin(
         r.trajeto::geography,
         ST_SetSRID(:destino, 4326)::geography,
-        10000
+        500
     )
     AND
     ST_LineLocatePoint(
@@ -84,6 +88,46 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
     LocalDate data,
     LocalTime inicio,
     LocalTime fim
+    );
+
+    // segunda query ela deve verificar os pontos de paradas para não misturar a logica
+    // ela 
+    // tem que testar para ver  
+    @Query(value = """
+    SELECT DISTINCT c.*
+    FROM carona c
+    JOIN rota r ON r.id = c.rota_id
+    JOIN ponto_parada pp ON pp.rota_id = r.id
+    WHERE
+    ST_DWithin(
+            pp.localizacao::geography,
+            ST_SetSRID(:saida, 4326)::geography,
+            :raio
+        )
+
+    AND ST_DWithin(
+            r.trajeto::geography,
+            ST_SetSRID(:destino, 4326)::geography,
+            :raio
+        )
+
+    AND ST_LineLocatePoint(
+            r.trajeto,
+            pp.localizacao
+        )
+    <
+    ST_LineLocatePoint(
+            r.trajeto,
+            ST_SetSRID(:destino, 4326)
+        )
+
+    AND c.data = :data
+    """, nativeQuery = true)
+    List<Carona> buscarCaronasPorParadas(
+        @Param("saida") Point saida,
+        @Param("destino") Point destino,
+        @Param("data") LocalDate data,
+        @Param("raio") Long raio
     );
     
 /*  query para pegar passageiros para enviar o codigo de confirmação baseado na posição do motorista

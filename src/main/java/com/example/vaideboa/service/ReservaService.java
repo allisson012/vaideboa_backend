@@ -39,6 +39,15 @@ public class ReservaService {
       );
         List<BuscaRetornaDto> buscasRetornosDto = new ArrayList<>();
         List<Carona> caronas = caronaRepository.buscarCaronasTodoTrajeto(saida, destino, buscaDto.getData());
+        List<Carona> caronasPorParadas = caronaRepository.buscarCaronasPorParadas(saida, destino, buscaDto.getData(), 20000L);
+        System.out.println(caronas.size());
+        System.out.println(caronasPorParadas.size());
+
+        for (Carona carona : caronasPorParadas) {
+            if (!caronas.contains(carona)) {
+                caronas.add(carona);
+            }
+        }
         // buscar na api as distancia das caronas para ver se da 10 km mesmo
             for (Carona carona : caronas) {
                 BuscaRetornaDto buscaRetornoDto = new BuscaRetornaDto();

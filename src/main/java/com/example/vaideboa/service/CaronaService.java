@@ -1,11 +1,13 @@
 package com.example.vaideboa.service;
 
 import com.example.vaideboa.repository.CaronaRepository;
+import com.example.vaideboa.repository.PontoParadaRepository;
 import com.example.vaideboa.repository.RotaRepository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -21,14 +23,18 @@ import org.springframework.stereotype.Service;
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.CaronaDto;
 import com.example.vaideboa.Dtos.CaronaRetornoDto;
+import com.example.vaideboa.Dtos.ParadaDto;
 import com.example.vaideboa.Dtos.RotaInfoDto;
 import com.example.vaideboa.Dtos.ViagemRealizadaDTO;
 import com.example.vaideboa.model.Carona;
+import com.example.vaideboa.model.PontoParada;
 import com.example.vaideboa.model.Reserva;
 import com.example.vaideboa.model.Rota;
 import com.example.vaideboa.model.User;
 import com.example.vaideboa.model.enums.StatusCarona;
 import com.example.vaideboa.repository.UserRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class CaronaService {
@@ -39,11 +45,12 @@ public class CaronaService {
     private final AvaliacaoService avaliacaoService;
     private final GeoService geoService;
     private final CodigoService codigoService;
+    private final PontoParadaRepository pontoParadaRepository;
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
     public CaronaService(CaronaRepository caronaRepository, RotaRepository rotaRepository,
         UserRepository userRepository, RotaService rotaService, AvaliacaoService avaliacaoService,
-        GeoService geoService, CodigoService codigoService) {
+        GeoService geoService, CodigoService codigoService, PontoParadaRepository pontoParadaRepository) {
       this.caronaRepository = caronaRepository;
       this.rotaRepository = rotaRepository;
       this.userRepository = userRepository;
@@ -51,8 +58,10 @@ public class CaronaService {
       this.avaliacaoService = avaliacaoService;
       this.geoService = geoService;
       this.codigoService = codigoService;
+      this.pontoParadaRepository = pontoParadaRepository;
     }
 
+    @Transactional
     public boolean cadastrarCarona(CaronaDto caronaDto , String username){
       Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
       if(userOpt.isEmpty()){
@@ -70,7 +79,36 @@ public class CaronaService {
       carona.setStatusCarona(StatusCarona.EM_ESPERA);
       rota.setSaida(saida);
       rota.setDestino(destino);
-      String geojson = rotaService.getRota(saida, destino);
+
+      List<PontoParada> pontosParadas = new ArrayList<>();
+      String geojson;
+
+      if(!caronaDto.getParadas().isEmpty()){
+        List<ParadaDto> paradasOrdenadas = caronaDto.getParadas().stream()
+        .sorted(Comparator.comparingInt(ParadaDto::getIndexOrder))
+        .toList();
+        // ordenando para garantir que vai seguir a order correta
+        List<List<Double>> coordinates = new ArrayList<>();
+        coordinates.add(Arrays.asList(saida.getX(), saida.getY()));
+        for (ParadaDto parada : paradasOrdenadas){
+          coordinates.add(Arrays.asList(parada.getLongitude(), parada.getLatitude()));
+          PontoParada pontoParada = new PontoParada();
+          pontoParada.setIndexOrder(parada.getIndexOrder());
+          Point localizacao = geometryFactory.createPoint(
+            new Coordinate(parada.getLongitude(), parada.getLatitude())
+          );
+          pontoParada.setLocalizacao(localizacao);
+          pontoParada.setRota(rota);
+          pontosParadas.add(pontoParada);
+        }
+        coordinates.add(Arrays.asList(destino.getX(), destino.getY()));
+        geojson = rotaService.getRotaComParadas(coordinates);
+      }else{
+        geojson = rotaService.getRota(saida, destino);  
+      }
+      if(geojson == null || geojson.isBlank()) {
+        return false;
+      }
       LineString trajeto = rotaService.salvarRota(geojson);
       rota.setTrajeto(trajeto);
       RotaInfoDto rotaInfoDto = rotaService.extrairInfoRota(geojson);
@@ -82,6 +120,9 @@ public class CaronaService {
       if(rotaSalva == null)
       {
         return false;
+      }
+      if(!pontosParadas.isEmpty()){
+        pontoParadaRepository.saveAll(pontosParadas);
       }
       carona.setQntAssentos(caronaDto.getQntAssentos());
       carona.setVagasDisponiveis(caronaDto.getQntAssentos());

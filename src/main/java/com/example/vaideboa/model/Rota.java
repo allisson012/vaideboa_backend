@@ -36,7 +36,7 @@ public class Rota {
     private String destinoTexto;
     @OneToMany(mappedBy = "rota")
     @JsonIgnore
-    private List<RotaPoint> rota_points;
+    private List<PontoParada> rota_points;
     @Column(columnDefinition = "geometry(LineString,4326)")
     private LineString trajeto;
     // @Column(columnDefinition = "jsonb")

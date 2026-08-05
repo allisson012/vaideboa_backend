@@ -17,10 +17,12 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RotaPoint {
+public class PontoParada {
+    // se o ponto for distante da minha rota vou ter remodelar ela
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false)
     private int indexOrder;
     
     @ManyToOne
