@@ -1,5 +1,7 @@
 package com.example.vaideboa.Dtos;
 
+import java.util.List;
+
 import org.locationtech.jts.geom.Point;
 import org.springframework.cglib.core.Local;
 
@@ -27,8 +29,9 @@ public class PedidoCaronaRetornoDto {
     private Double distancia;
     private Double duracao;
     private String statusPedido;
+    private List<PontoParadaRetornoDto> paradas;
     
-        public Long getIdUser() {
+    public Long getIdUser() {
         return idUser;
     }
     public void setIdUser(Long idUser) {
@@ -151,6 +154,11 @@ public class PedidoCaronaRetornoDto {
     public void setIdCarona(Long idCarona) {
         this.idCarona = idCarona;
     }
-    
+    public List<PontoParadaRetornoDto> getParadas() {
+        return paradas;
+    }
+    public void setParadas(List<PontoParadaRetornoDto> paradas) {
+        this.paradas = paradas;
+    }
     
 }

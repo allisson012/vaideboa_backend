@@ -24,6 +24,7 @@ import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.CaronaDto;
 import com.example.vaideboa.Dtos.CaronaRetornoDto;
 import com.example.vaideboa.Dtos.ParadaDto;
+import com.example.vaideboa.Dtos.PontoParadaRetornoDto;
 import com.example.vaideboa.Dtos.RotaInfoDto;
 import com.example.vaideboa.Dtos.ViagemRealizadaDTO;
 import com.example.vaideboa.model.Carona;
@@ -263,6 +264,17 @@ public class CaronaService {
     dto.setNome(carona.getMotorista().getNome());
     dto.setGenero(carona.getMotorista().getGenero().getDescricao());
     dto.setIdRota(carona.getRota().getId());
+    List<PontoParadaRetornoDto> paradasDto = new ArrayList<PontoParadaRetornoDto>();
+    for (PontoParada parada : carona.getRota().getRota_points()) {
+      PontoParadaRetornoDto paradaDto = new PontoParadaRetornoDto();
+      paradaDto.setIndexOrder(parada.getIndexOrder());
+      paradaDto.setLatPonto(parada.getLocalizacao().getY());
+      paradaDto.setLonPonto(parada.getLocalizacao().getX());
+      paradaDto.setTextoPonto(parada.getTextoPonto());
+      paradasDto.add(paradaDto);
+    }
+    dto.setParadas(paradasDto);
+
     return new ApiResponse(true, "Busca feita com sucesso", dto);
   }
 

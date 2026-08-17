@@ -3,6 +3,7 @@ package com.example.vaideboa.service;
 import com.example.vaideboa.Dtos.AgendarCaronaDto;
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.PedidoCaronaRetornoDto;
+import com.example.vaideboa.Dtos.PontoParadaRetornoDto;
 import com.example.vaideboa.controller.PedidoController;
 import com.example.vaideboa.repository.ReservaRepository;
 
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.PedidoCarona;
+import com.example.vaideboa.model.PontoParada;
 import com.example.vaideboa.model.Reserva;
 import com.example.vaideboa.model.User;
 import com.example.vaideboa.model.enums.StatusPedido;
@@ -128,7 +130,6 @@ public class PedidoService {
       List<PedidoCarona> pedidosCarona = new ArrayList<>();
       for (Carona carona : caronas) {
         List<PedidoCarona> pedidos = pedidoCaronaRepository.findByCaronaAndStatus(carona, StatusPedido.PENDENTE);
-
         pedidosCarona.addAll(pedidos);
       }
       List<PedidoCaronaRetornoDto> dtos = new ArrayList<>();
@@ -149,6 +150,16 @@ public class PedidoService {
         dto.setLatDestino(pedidoCarona.getCarona().getRota().getDestino().getY());
         dto.setLonDestino(pedidoCarona.getCarona().getRota().getDestino().getX());
         dto.setDestinoTexto(pedidoCarona.getCarona().getRota().getDestinoTexto());
+        List<PontoParadaRetornoDto> paradasDto = new ArrayList<PontoParadaRetornoDto>();
+        for(PontoParada parada : pedidoCarona.getCarona().getRota().getRota_points()) {
+        PontoParadaRetornoDto paradaDto = new PontoParadaRetornoDto();
+        paradaDto.setIndexOrder(parada.getIndexOrder());
+        paradaDto.setLatPonto(parada.getLocalizacao().getY());
+        paradaDto.setLonPonto(parada.getLocalizacao().getX());
+        paradaDto.setTextoPonto(parada.getTextoPonto());
+        paradasDto.add(paradaDto);
+        }
+        dto.setParadas(paradasDto);
 
         dtos.add(dto);
       }
@@ -198,6 +209,17 @@ public class PedidoService {
         dto.setIdCarona(pedidoCarona.getCarona().getId());
         dto.setDistancia(pedidoCarona.getCarona().getRota().getDistancia());
         dto.setDataPedido(pedidoCarona.getDataPedido() != null ? pedidoCarona.getDataPedido().toString() : "");
+        List<PontoParadaRetornoDto> paradasDto = new ArrayList<PontoParadaRetornoDto>();
+        for(PontoParada parada : pedidoCarona.getCarona().getRota().getRota_points()) {
+        PontoParadaRetornoDto paradaDto = new PontoParadaRetornoDto();
+        paradaDto.setIndexOrder(parada.getIndexOrder());
+        paradaDto.setLatPonto(parada.getLocalizacao().getY());
+        paradaDto.setLonPonto(parada.getLocalizacao().getX());
+        paradaDto.setTextoPonto(parada.getTextoPonto());
+        paradasDto.add(paradaDto);
+        }
+        dto.setParadas(paradasDto);
+
         dtos.add(dto);
       }
       return new ApiResponse(true, "Pedidos buscados com sucesso", dtos);

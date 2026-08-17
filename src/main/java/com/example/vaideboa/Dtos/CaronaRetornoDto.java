@@ -1,5 +1,7 @@
 package com.example.vaideboa.Dtos;
 
+import java.util.List;
+
 public class CaronaRetornoDto {
     private Long idCarona;
     private int qntAssentos;
@@ -20,6 +22,7 @@ public class CaronaRetornoDto {
     // id do user se for para o motorista 
     private String nome;
     private String genero;
+    private List<PontoParadaRetornoDto> paradas;
     // carro
     // foto
     public Long getIdCarona() {
@@ -123,6 +126,12 @@ public class CaronaRetornoDto {
     }
     public void setIdRota(Long idRota) {
         this.idRota = idRota;
+    }
+    public List<PontoParadaRetornoDto> getParadas() {
+        return paradas;
+    }
+    public void setParadas(List<PontoParadaRetornoDto> paradas) {
+        this.paradas = paradas;
     }
     
 }

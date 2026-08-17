@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service;
 
 import com.example.vaideboa.Dtos.BuscaCaronaDto;
 import com.example.vaideboa.Dtos.BuscaRetornaDto;
+import com.example.vaideboa.Dtos.PontoParadaRetornoDto;
 import com.example.vaideboa.model.Carona;
+import com.example.vaideboa.model.PontoParada;
 import com.example.vaideboa.model.Rota;
 import com.example.vaideboa.repository.CaronaRepository;
 import com.example.vaideboa.repository.RotaRepository;
@@ -39,7 +41,7 @@ public class ReservaService {
       );
         List<BuscaRetornaDto> buscasRetornosDto = new ArrayList<>();
         List<Carona> caronas = caronaRepository.buscarCaronasTodoTrajeto(saida, destino, buscaDto.getData());
-        List<Carona> caronasPorParadas = caronaRepository.buscarCaronasPorParadas(saida, destino, buscaDto.getData(), 20000L);
+        List<Carona> caronasPorParadas = caronaRepository.buscarCaronasPorParadas(saida, destino, buscaDto.getData(), 2000L);
         System.out.println(caronas.size());
         System.out.println(caronasPorParadas.size());
 
@@ -70,6 +72,16 @@ public class ReservaService {
                 buscaRetornoDto.setIdRota(carona.getRota().getId());
                 buscaRetornoDto.setData(carona.getData());
                 buscaRetornoDto.setHora(carona.getHora());
+                List<PontoParadaRetornoDto> paradasDto = new ArrayList<PontoParadaRetornoDto>();
+                for(PontoParada parada : carona.getRota().getRota_points()) {
+                PontoParadaRetornoDto paradaDto = new PontoParadaRetornoDto();
+                paradaDto.setIndexOrder(parada.getIndexOrder());
+                paradaDto.setLatPonto(parada.getLocalizacao().getY());
+                paradaDto.setLonPonto(parada.getLocalizacao().getX());
+                paradaDto.setTextoPonto(parada.getTextoPonto());
+                paradasDto.add(paradaDto);
+                }
+                buscaRetornoDto.setParadas(paradasDto);
                 buscasRetornosDto.add(buscaRetornoDto);
             }
         return buscasRetornosDto;

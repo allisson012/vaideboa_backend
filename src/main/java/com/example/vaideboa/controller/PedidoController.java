@@ -55,7 +55,7 @@ public class PedidoController {
 
 
     @GetMapping("/buscar")
-    public ResponseEntity<?> buscarPedidoCarona(Authentication auth){
+    public ResponseEntity<?> buscarTodosPedidos(Authentication auth){
         String username = auth.getName();
         ApiResponse response = pedidoService.buscarPedidos(username);
         if(!response.isRetorno()){
@@ -65,7 +65,7 @@ public class PedidoController {
     }
 
     @GetMapping("/buscarPedidos/{idCarona}")
-    public ResponseEntity<?> buscarTodosPedidos(@PathVariable Long idCarona, Authentication auth){
+    public ResponseEntity<?> buscarPedidoCarona(@PathVariable Long idCarona, Authentication auth){
         String username = auth.getName();
         ApiResponse response = pedidoService.buscarTodosPedidos(idCarona, username);
         if(!response.isRetorno()){

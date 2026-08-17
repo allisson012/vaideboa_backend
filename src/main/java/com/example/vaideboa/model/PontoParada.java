@@ -31,7 +31,8 @@ public class PontoParada {
     private Rota rota;
     @Column(columnDefinition = "geometry(Point,4326)")
     private Point localizacao;
-
+    private String textoPonto;
+    // colocar uma string com o nome do ponto
     /*
         @Column(columnDefinition = "geometry(LineString,4326)")
         private LineString geometria;
