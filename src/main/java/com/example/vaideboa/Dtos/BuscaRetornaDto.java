@@ -2,6 +2,7 @@ package com.example.vaideboa.Dtos;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 public class BuscaRetornaDto {
     private  LocalDate data;
@@ -15,6 +16,7 @@ public class BuscaRetornaDto {
     private  double destinoLon;
     private  Double distancia;
     private  Double duracao;
+    private  List<PontoParadaRetornoDto> paradas;
     
     public Long getIdMotorista() {
         return idMotorista;
@@ -82,6 +84,12 @@ public class BuscaRetornaDto {
     public void setDuracao(Double duracao) {
         this.duracao = duracao;
     }
-
+    public List<PontoParadaRetornoDto> getParadas() {
+        return paradas;
+    }
+    public void setParadas(List<PontoParadaRetornoDto> paradas) {
+        this.paradas = paradas;
+    }
+    
     
 }
