@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.AvaliacaoDto;
+import com.example.vaideboa.Dtos.AvaliacaoRetornoDto;
 import com.example.vaideboa.model.Avaliacao;
 import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.Reserva;
@@ -118,5 +119,41 @@ private final ReservaRepository reservaRepository;
         avaliacaoRepository.save(avaliacaoSalva);
 
         return new ApiResponse(true, "Avaliação salva com sucesso");
+    }
+
+    public ApiResponse buscarAvaliacaoPorId(Long id, String username) {
+        Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
+        if (userOpt.isEmpty()) {
+            return new ApiResponse(false, "Usuário não encontrado");
+        }
+        User user = userOpt.get();
+
+        Optional<Avaliacao> avaliacaoOpt = avaliacaoRepository.findById(id);
+        if (avaliacaoOpt.isEmpty()) {
+            return new ApiResponse(false, "Avaliação não encontrada");
+        }
+        Avaliacao avaliacao = avaliacaoOpt.get();
+
+        if (!avaliacao.getAvaliador().equals(user)) {
+            return new ApiResponse(false, "Usuário não tem acesso a esta avaliação");
+        }
+
+        Reserva reserva = avaliacao.getReserva();
+        Carona carona = reserva.getCarona();
+
+        AvaliacaoRetornoDto dto = new AvaliacaoRetornoDto();
+        dto.setId(avaliacao.getId());
+        dto.setIdReserva(reserva.getId());
+        dto.setIdCarona(carona.getId());
+        dto.setNomeAvaliado(avaliacao.getAvaliado().getNome());
+        dto.setData(carona.getData().toString());
+        dto.setHora(carona.getHora().toString());
+        dto.setSaidaTexto(carona.getRota().getSaidaTexto());
+        dto.setDestinoTexto(carona.getRota().getDestinoTexto());
+        dto.setNota(avaliacao.getNota());
+        dto.setComentario(avaliacao.getComentario());
+        dto.setTipo(avaliacao.getTipo());
+
+        return new ApiResponse(true, "Avaliação encontrada", dto);
     }
 }

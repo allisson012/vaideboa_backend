@@ -22,6 +22,8 @@ public class ViagemRealizadaDTO {
     private boolean realizada;
     private String origemTexto;
     private String destinoTexto;
+    private Long idReserva;
+    private Long idAvaliacao;
 
 
 }

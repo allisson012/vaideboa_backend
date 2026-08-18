@@ -27,6 +27,8 @@ public class PedidoCaronaRetornoDto {
     private Double distancia;
     private Double duracao;
     private String statusPedido;
+    private Long idAvaliacao;
+    private Long idReserva;
     
         public Long getIdUser() {
         return idUser;
@@ -150,6 +152,18 @@ public class PedidoCaronaRetornoDto {
     }
     public void setIdCarona(Long idCarona) {
         this.idCarona = idCarona;
+    }
+    public Long getIdAvaliacao() {
+        return idAvaliacao;
+    }
+    public void setIdAvaliacao(Long idAvaliacao) {
+        this.idAvaliacao = idAvaliacao;
+    }
+    public Long getIdReserva() {
+        return idReserva;
+    }
+    public void setIdReserva(Long idReserva) {
+        this.idReserva = idReserva;
     }
     
     
