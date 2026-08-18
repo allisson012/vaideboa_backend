@@ -3,6 +3,7 @@ package com.example.vaideboa.service;
 import com.example.vaideboa.repository.CaronaRepository;
 import com.example.vaideboa.repository.PontoParadaRepository;
 import com.example.vaideboa.repository.RotaRepository;
+import com.example.vaideboa.repository.AvaliacaoRepository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -31,7 +32,9 @@ import com.example.vaideboa.model.PontoParada;
 import com.example.vaideboa.model.Reserva;
 import com.example.vaideboa.model.Rota;
 import com.example.vaideboa.model.User;
+import com.example.vaideboa.model.Avaliacao;
 import com.example.vaideboa.model.enums.StatusCarona;
+import com.example.vaideboa.model.enums.TipoAvaliacao;
 import com.example.vaideboa.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
@@ -46,11 +49,13 @@ public class CaronaService {
     private final GeoService geoService;
     private final CodigoService codigoService;
     private final PontoParadaRepository pontoParadaRepository;
+    private final AvaliacaoRepository avaliacaoRepository;
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
     public CaronaService(CaronaRepository caronaRepository, RotaRepository rotaRepository,
         UserRepository userRepository, RotaService rotaService, AvaliacaoService avaliacaoService,
-        GeoService geoService, CodigoService codigoService, PontoParadaRepository pontoParadaRepository) {
+        GeoService geoService, CodigoService codigoService, PontoParadaRepository pontoParadaRepository,
+        AvaliacaoRepository avaliacaoRepository) {
       this.caronaRepository = caronaRepository;
       this.rotaRepository = rotaRepository;
       this.userRepository = userRepository;
@@ -59,6 +64,7 @@ public class CaronaService {
       this.geoService = geoService;
       this.codigoService = codigoService;
       this.pontoParadaRepository = pontoParadaRepository;
+      this.avaliacaoRepository = avaliacaoRepository;
     }
 
     @Transactional
@@ -195,7 +201,9 @@ public class CaronaService {
                 "MOTORISTA",
                 realizada,
                 c.getRota().getSaidaTexto(),
-                c.getRota().getDestinoTexto()
+                c.getRota().getDestinoTexto(),
+                null,
+                null
         ));
         idsAdicionados.add(c.getId());
     }
@@ -213,7 +221,7 @@ public class CaronaService {
         Point origem = c.getRota().getSaida();
         Point destino = c.getRota().getDestino();
 
-        resultado.add(new ViagemRealizadaDTO(
+        ViagemRealizadaDTO dto = new ViagemRealizadaDTO(
                 c.getId(),
                 origem.getY(),
                 origem.getX(),
@@ -224,8 +232,17 @@ public class CaronaService {
                 "PASSAGEIRO",
                 realizada,
                 c.getRota().getSaidaTexto(),
-                c.getRota().getDestinoTexto()
-        ));
+                c.getRota().getDestinoTexto(),
+                null,
+                null
+        );
+        dto.setIdReserva(r.getId());
+        Optional<Avaliacao> avaliacaoOpt = avaliacaoRepository.findByReservaAndAvaliadoAndAvaliador(
+            r, c.getMotorista(), user);
+        if (avaliacaoOpt.isPresent()) {
+            dto.setIdAvaliacao(avaliacaoOpt.get().getId());
+        }
+        resultado.add(dto);
         idsAdicionados.add(c.getId());
     }
     resultado.sort(Comparator

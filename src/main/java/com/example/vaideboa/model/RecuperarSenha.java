@@ -29,6 +29,6 @@ public class RecuperarSenha {
     @JoinColumn(name = "user_id")
     private User user;
     private LocalDateTime expiresAt;
-    private Boolean utilizado;
+    private Boolean utilizado = false;
     // quantidade de vezes que pode enviar
 }

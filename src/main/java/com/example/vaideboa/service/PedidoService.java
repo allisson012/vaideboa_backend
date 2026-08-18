@@ -16,11 +16,14 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 
+import com.example.vaideboa.model.Avaliacao;
 import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.PedidoCarona;
 import com.example.vaideboa.model.Reserva;
 import com.example.vaideboa.model.User;
 import com.example.vaideboa.model.enums.StatusPedido;
+import com.example.vaideboa.model.enums.TipoAvaliacao;
+import com.example.vaideboa.repository.AvaliacaoRepository;
 import com.example.vaideboa.repository.CaronaRepository;
 import com.example.vaideboa.repository.PedidoCaronaRepository;
 import com.example.vaideboa.repository.UserRepository;
@@ -32,14 +35,17 @@ public class PedidoService {
     private final UserRepository userRepository;
     private final CaronaRepository caronaRepository;
     private final PedidoCaronaRepository pedidoCaronaRepository;
+    private final AvaliacaoRepository avaliacaoRepository;
     private final GeometryFactory geometryFactory = new GeometryFactory();
     
     public PedidoService(UserRepository userRepository, CaronaRepository caronaRepository,
-            PedidoCaronaRepository pedidoCaronaRepository, ReservaRepository reservaRepository) {
+            PedidoCaronaRepository pedidoCaronaRepository, ReservaRepository reservaRepository,
+            AvaliacaoRepository avaliacaoRepository) {
         this.userRepository = userRepository;
         this.caronaRepository = caronaRepository;
         this.pedidoCaronaRepository = pedidoCaronaRepository;
         this.reservaRepository = reservaRepository;
+        this.avaliacaoRepository = avaliacaoRepository;
     }
 
     public ApiResponse agendarCarona(AgendarCaronaDto agendarCaronaDto , String username){
@@ -198,6 +204,20 @@ public class PedidoService {
         dto.setIdCarona(pedidoCarona.getCarona().getId());
         dto.setDistancia(pedidoCarona.getCarona().getRota().getDistancia());
         dto.setDataPedido(pedidoCarona.getDataPedido() != null ? pedidoCarona.getDataPedido().toString() : "");
+
+        if (pedidoCarona.getStatus() == StatusPedido.ACEITO) {
+          Optional<Reserva> reservaOpt = reservaRepository.findByCaronaAndPassageiro(
+              pedidoCarona.getCarona(), pedidoCarona.getPassageiro());
+          if (reservaOpt.isPresent()) {
+            dto.setIdReserva(reservaOpt.get().getId());
+            Optional<Avaliacao> avaliacaoOpt = avaliacaoRepository.findByReservaAndAvaliadoAndAvaliador(
+                reservaOpt.get(), pedidoCarona.getPassageiro(), user);
+            if (avaliacaoOpt.isPresent()) {
+              dto.setIdAvaliacao(avaliacaoOpt.get().getId());
+            }
+          }
+        }
+
         dtos.add(dto);
       }
       return new ApiResponse(true, "Pedidos buscados com sucesso", dtos);
