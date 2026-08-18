@@ -30,7 +30,9 @@ public class PedidoCaronaRetornoDto {
     private Double duracao;
     private String statusPedido;
     private List<PontoParadaRetornoDto> paradas;
-    
+    private Long idAvaliacao;
+    private Long idReserva;
+
     public Long getIdUser() {
         return idUser;
     }
@@ -159,6 +161,18 @@ public class PedidoCaronaRetornoDto {
     }
     public void setParadas(List<PontoParadaRetornoDto> paradas) {
         this.paradas = paradas;
+    }
+    public Long getIdAvaliacao() {
+        return idAvaliacao;
+    }
+    public void setIdAvaliacao(Long idAvaliacao) {
+        this.idAvaliacao = idAvaliacao;
+    }
+    public Long getIdReserva() {
+        return idReserva;
+    }
+    public void setIdReserva(Long idReserva) {
+        this.idReserva = idReserva;
     }
     
 }
