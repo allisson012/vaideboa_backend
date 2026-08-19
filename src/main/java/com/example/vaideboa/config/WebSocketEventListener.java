@@ -17,14 +17,28 @@ public class WebSocketEventListener {
     @EventListener
     public void handleConnect(SessionConnectedEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+
+        if (accessor.getUser() == null) {
+            System.out.println("SessionConnectedEvent sem usuário autenticado (accessor.getUser() é null)");
+            return;
+        }
+
         String username = accessor.getUser().getName();
+        System.out.println("WEBSOCKET CONECTADO: " + username + " | session=" + accessor.getSessionId());
         sessionManager.registrar(username, accessor.getSessionId());
     }
 
     @EventListener
     public void handleDisconnect(SessionDisconnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+
+        if (accessor.getUser() == null) {
+            System.out.println("SessionDisconnectEvent sem usuário autenticado (accessor.getUser() é null)");
+            return;
+        }
+
         String username = accessor.getUser().getName();
+        System.out.println("WEBSOCKET DESCONECTADO: " + username);
         sessionManager.remover(username);
     }
 }

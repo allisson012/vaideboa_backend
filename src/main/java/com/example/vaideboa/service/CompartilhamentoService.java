@@ -1,5 +1,11 @@
 package com.example.vaideboa.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.locationtech.jts.geom.Coordinate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -12,13 +18,14 @@ import lombok.RequiredArgsConstructor;
 public class CompartilhamentoService {
 
     private final SimpMessagingTemplate messagingTemplate;
-
+    private final Map<Long, List<Coordinate>> trajetosEmAndamento = new ConcurrentHashMap<>();
     public void atualizarLocalizacao(
             Long idCarona,
             double latitude,
             double longitude
     ) {
-
+        System.out.println("latidute = "+latitude);
+        System.out.println("longitude = "+longitude);
         LocalizacaoDto localizacao =
                 new LocalizacaoDto(latitude, longitude);
 
@@ -26,5 +33,8 @@ public class CompartilhamentoService {
                 "/topic/carona/" + idCarona,
                 localizacao
         );
+    }
+    public void iniciarCompartilhamento(Long idCarona) {
+    trajetosEmAndamento.put(idCarona, new ArrayList<>());
     }
 }
