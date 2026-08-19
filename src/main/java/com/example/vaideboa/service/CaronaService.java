@@ -204,7 +204,8 @@ public class CaronaService {
                 c.getRota().getSaidaTexto(),
                 c.getRota().getDestinoTexto(),
                 null,
-                null
+                null,
+                converterParadas(c.getRota().getRota_points())
         ));
         idsAdicionados.add(c.getId());
     }
@@ -235,7 +236,8 @@ public class CaronaService {
                 c.getRota().getSaidaTexto(),
                 c.getRota().getDestinoTexto(),
                 null,
-                null
+                null,
+                converterParadas(c.getRota().getRota_points())
         );
         dto.setIdReserva(r.getId());
         Optional<Avaliacao> avaliacaoOpt = avaliacaoRepository.findByReservaAndAvaliadoAndAvaliador(
@@ -252,6 +254,30 @@ public class CaronaService {
 
     return new ApiResponse(true, "Viagens encontradas com sucesso", resultado);
   }
+  private List<PontoParadaRetornoDto> converterParadas(List<PontoParada> pontos) {
+    List<PontoParadaRetornoDto> paradas = new ArrayList<>();
+
+    if (pontos == null) {
+        return paradas;
+    }
+
+    for (PontoParada ponto : pontos) {
+        PontoParadaRetornoDto dto = new PontoParadaRetornoDto();
+
+        dto.setLatPonto(ponto.getLocalizacao().getY());
+        dto.setLonPonto(ponto.getLocalizacao().getX());
+        dto.setIndexOrder(ponto.getIndexOrder());
+        dto.setTextoPonto(ponto.getTextoPonto());
+
+        paradas.add(dto);
+    }
+
+    paradas.sort(
+        Comparator.comparingInt(PontoParadaRetornoDto::getIndexOrder)
+    );
+
+    return paradas;
+}
 
   public ApiResponse buscarCaronaPeloId(String username , Long idCarona){
     Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
