@@ -2,6 +2,7 @@ package com.example.vaideboa.Dtos;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,6 +25,6 @@ public class ViagemRealizadaDTO {
     private String destinoTexto;
     private Long idReserva;
     private Long idAvaliacao;
-
+    private List<PontoParadaRetornoDto> paradas;
 
 }
