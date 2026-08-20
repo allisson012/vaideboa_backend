@@ -19,22 +19,22 @@ public class CompartilhamentoService {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final Map<Long, List<Coordinate>> trajetosEmAndamento = new ConcurrentHashMap<>();
-    public void atualizarLocalizacao(
-            Long idCarona,
-            double latitude,
-            double longitude
-    ) {
+    public void atualizarLocalizacao(Long idCarona, double latitude, double longitude) {
         System.out.println("latidute = "+latitude);
         System.out.println("longitude = "+longitude);
-        LocalizacaoDto localizacao =
-                new LocalizacaoDto(latitude, longitude);
-
-        messagingTemplate.convertAndSend(
-                "/topic/carona/" + idCarona,
-                localizacao
-        );
+        LocalizacaoDto localizacao = new LocalizacaoDto(latitude, longitude);
+        messagingTemplate.convertAndSend("/topic/carona/" + idCarona, localizacao);
+        // não repetir o mesmo ponto
     }
     public void iniciarCompartilhamento(Long idCarona) {
-    trajetosEmAndamento.put(idCarona, new ArrayList<>());
+        trajetosEmAndamento.put(idCarona, new ArrayList<>());
+    }
+
+    public void removerCompartilhamento(Long idCarona){
+
+    }
+
+    public void finalizarCompartilhamento(Long idCarona){
+        
     }
 }

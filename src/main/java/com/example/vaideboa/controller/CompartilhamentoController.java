@@ -21,10 +21,6 @@ public class CompartilhamentoController {
         System.out.println("USUÁRIO: " + auth.getName());
         System.out.println("CARONA: " + idCarona);
         System.out.println("LOCALIZAÇÃO: " + localizacao);
-        compartilhamentoService.atualizarLocalizacao(
-                idCarona,
-                localizacao.getLatitude(),
-                localizacao.getLongitude()
-        );
+        compartilhamentoService.atualizarLocalizacao(idCarona, localizacao.getLatitude(), localizacao.getLongitude());
     }
 }

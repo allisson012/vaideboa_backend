@@ -92,8 +92,8 @@ public class CaronaService {
 
       if(!caronaDto.getParadas().isEmpty()){
         List<ParadaDto> paradasOrdenadas = caronaDto.getParadas().stream()
-        .sorted(Comparator.comparingInt(ParadaDto::getIndexOrder))
-        .toList();
+          .sorted(Comparator.comparingInt(ParadaDto::getIndexOrder))
+          .toList();
         // ordenando para garantir que vai seguir a order correta
         List<List<Double>> coordinates = new ArrayList<>();
         coordinates.add(Arrays.asList(saida.getX(), saida.getY()));
@@ -104,6 +104,7 @@ public class CaronaService {
           Point localizacao = geometryFactory.createPoint(
             new Coordinate(parada.getLongitude(), parada.getLatitude())
           );
+          pontoParada.setTextoPonto(geoService.reverseGeocode(localizacao.getY(), localizacao.getX()));
           pontoParada.setLocalizacao(localizacao);
           pontoParada.setRota(rota);
           pontosParadas.add(pontoParada);
