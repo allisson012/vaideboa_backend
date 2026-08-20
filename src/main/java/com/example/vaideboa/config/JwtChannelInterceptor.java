@@ -31,25 +31,26 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
         if (accessor == null) return message;
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-            
-            String authHeader = accessor.getFirstNativeHeader("Authorization");
-            System.out.println("CONNECT recebido");
 
-            System.out.println(authHeader);
+            String authHeader = accessor.getFirstNativeHeader("Authorization");
+            System.out.println("CONNECT recebido. Header Authorization presente? " + (authHeader != null));
 
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                System.out.println("CONNECT rejeitado: token ausente ou mal formatado");
                 throw new MessageDeliveryException("Token ausente");
             }
 
             String token = authHeader.substring(7);
 
-            
             if (!jwtService.tokenValido(token)) {
+                System.out.println("CONNECT rejeitado: token inválido ou expirado");
                 throw new MessageDeliveryException("Token inválido ou expirado");
             }
 
             Jwt jwt = jwtService.decode(token);
             String username = jwt.getSubject();
+
+            System.out.println("CONNECT autenticado com sucesso: " + username);
 
             UsernamePasswordAuthenticationToken auth =
                 new UsernamePasswordAuthenticationToken(
@@ -61,5 +62,5 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
 
         return message;
     }
-    
+
 }

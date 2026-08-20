@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.vaideboa.Dtos.RotaInfoDto;
+import com.example.vaideboa.model.PontoParada;
 import com.example.vaideboa.model.Rota;
 import com.example.vaideboa.repository.RotaRepository;
 

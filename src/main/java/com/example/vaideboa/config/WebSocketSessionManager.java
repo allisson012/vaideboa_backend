@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class WebSocketSessionManager {
 
-    // guarda quem está conectado
     private final Map<String, String> usuariosOnline = new ConcurrentHashMap<>();
 
     public void registrar(String username, String sessionId) {
