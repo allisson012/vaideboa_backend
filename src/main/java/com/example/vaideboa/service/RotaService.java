@@ -126,13 +126,18 @@ public class RotaService {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode root = mapper.readTree(geojson);
 
-    JsonNode segment = root
+    JsonNode segments = root
             .path("features").get(0)
             .path("properties")
-            .path("segments").get(0);
+            .path("segments");
 
-    double distanciaMetros = segment.path("distance").asDouble();
-    double duracaoSegundos = segment.path("duration").asDouble();
+    // segments tem uma entrada por trecho entre waypoints; o total da rota e a soma de todos
+    double distanciaMetros = 0;
+    double duracaoSegundos = 0;
+    for (JsonNode segment : segments) {
+        distanciaMetros += segment.path("distance").asDouble();
+        duracaoSegundos += segment.path("duration").asDouble();
+    }
 
     double distanciaKm = Math.round((distanciaMetros / 1000.0) * 100.0) / 100.0;
     double duracaoMin = Math.round((duracaoSegundos / 60.0) * 100.0) / 100.0;
