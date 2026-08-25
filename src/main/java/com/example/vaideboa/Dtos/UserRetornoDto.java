@@ -8,9 +8,10 @@ public class UserRetornoDto {
     private final String dataNascimento;
     private final String genero;
     private final PreferenciasDto preferenciasDto;
+    private final RankingDto rankingDto;
     
     public UserRetornoDto(String nome, String email, String cpf, String telefone, String dataNascimento, String genero,
-            PreferenciasDto preferenciasDto) {
+            PreferenciasDto preferenciasDto, RankingDto rankingDto) {
         this.nome = nome;
         this.email = email;
         this.cpf = cpf;
@@ -18,6 +19,7 @@ public class UserRetornoDto {
         this.dataNascimento = dataNascimento;
         this.genero = genero;
         this.preferenciasDto = preferenciasDto;
+        this.rankingDto = rankingDto;
     }
 
     public String getNome() {
@@ -46,5 +48,9 @@ public class UserRetornoDto {
 
     public PreferenciasDto getPreferenciasDto() {
         return preferenciasDto;
+    }
+
+    public RankingDto getRankingDto() {
+        return rankingDto;
     }
 }
