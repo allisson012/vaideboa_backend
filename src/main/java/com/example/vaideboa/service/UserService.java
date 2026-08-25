@@ -10,6 +10,7 @@ import com.example.vaideboa.Dtos.AlterarSenhaDto;
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.EditarUserDto;
 import com.example.vaideboa.Dtos.PreferenciasDto;
+import com.example.vaideboa.Dtos.RankingDto;
 import com.example.vaideboa.Dtos.UserDto;
 import com.example.vaideboa.Dtos.UserRetornoDto;
 import com.example.vaideboa.exception.EmailJaCadastradoException;
@@ -27,13 +28,15 @@ public class UserService {
     private final UserRepository userRepository;
     private final CpfValidator cpfValidator;
     private final SenhaValidator senhaValidator;
+    private final AvaliacaoService avaliacaoService;
 
     public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, CpfValidator cpfValidator,
-            SenhaValidator senhaValidator) {
+            SenhaValidator senhaValidator, AvaliacaoService avaliacaoService) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.cpfValidator = cpfValidator;
         this.senhaValidator = senhaValidator;
+        this.avaliacaoService = avaliacaoService;
     }
 
     public boolean cadastrarUser(UserDto userDto){
@@ -83,7 +86,19 @@ public class UserService {
             pref != null && pref.getCigarro() != null ? pref.getCigarro(): NivelPreferencia.TALVEZ,
             pref != null && pref.getAnimais() != null ? pref.getAnimais(): NivelPreferencia.TALVEZ
         );
-        UserRetornoDto userRetornoDto = new UserRetornoDto(user.getNome(), user.getUsername(), user.getCpf(), user.getTelefone(), dataNascimento, user.getGenero().toString(), preferenciasDto);
+
+        RankingDto rankingDto = new RankingDto();
+        rankingDto = avaliacaoService.calculaRanking(user);
+        UserRetornoDto userRetornoDto = new UserRetornoDto(
+            user.getNome(), 
+            user.getUsername(),
+            user.getCpf(),
+            user.getTelefone(), 
+            dataNascimento,
+            user.getGenero().toString(), 
+            preferenciasDto,
+            rankingDto
+        );
         return userRetornoDto;
     }
 
