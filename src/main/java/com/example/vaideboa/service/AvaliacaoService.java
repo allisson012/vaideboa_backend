@@ -1,5 +1,6 @@
 package com.example.vaideboa.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.AvaliacaoDto;
 import com.example.vaideboa.Dtos.AvaliacaoRetornoDto;
+import com.example.vaideboa.Dtos.RankingDto;
 import com.example.vaideboa.model.Avaliacao;
 import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.Reserva;
@@ -155,5 +157,51 @@ private final ReservaRepository reservaRepository;
         dto.setTipo(avaliacao.getTipo());
 
         return new ApiResponse(true, "Avaliação encontrada", dto);
+    }
+
+    public RankingDto calculaRanking(User user){
+        RankingDto rankingDto = new RankingDto();
+
+        int numeroDeCaronas = user.getMinhasCaronas().size();
+        int numeroDeReservas = user.getMinhasReservas().size();
+
+        Optional<ArrayList<Avaliacao>> avaliacoesOpt = avaliacaoRepository.findByAvaliadoId(user.getId());
+        ArrayList<Avaliacao> avaliacoes = avaliacoesOpt.orElse(new ArrayList<>());
+
+        ArrayList<Double> notasMotorista = new ArrayList<>();
+        ArrayList<Double> notasPassageiro = new ArrayList<>();
+        for (Avaliacao avaliacao : avaliacoes) {
+            if(avaliacao.getTipo().equals(TipoAvaliacao.PASSAGEIRO_AVALIA_MOTORISTA) && avaliacao.getNota() != null){
+                notasMotorista.add(avaliacao.getNota());
+            }
+            else if(avaliacao.getTipo().equals(TipoAvaliacao.MOTORISTA_AVALIA_PASSAGEIRO) && avaliacao.getNota() != null){
+                notasPassageiro.add(avaliacao.getNota());
+            }
+        }
+
+        double somaMotorista = 0;
+        double somaPassageiro = 0;
+
+        for(Double nota : notasMotorista) {
+            somaMotorista += nota;
+        }
+        for(Double nota : notasPassageiro) {
+            somaPassageiro += nota;
+        }
+
+        double mediaMotorista = notasMotorista.isEmpty()
+        ? 0
+        : somaMotorista / notasMotorista.size();
+
+        double mediaPassageiro = notasPassageiro.isEmpty()
+        ? 0
+        : somaPassageiro / notasPassageiro.size();
+
+        rankingDto.setNumViagensMotorista(numeroDeCaronas);
+        rankingDto.setNumViagensPassageiro(numeroDeReservas);
+        rankingDto.setNotaMotorista(mediaMotorista);
+        rankingDto.setNotaPassageiro(mediaPassageiro);
+
+        return rankingDto;
     }
 }

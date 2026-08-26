@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import com.example.vaideboa.Dtos.ParadaDto;
 import com.example.vaideboa.Dtos.RotaTeste;
 import com.example.vaideboa.service.RotaService;
 
@@ -69,6 +70,22 @@ public class RotaController {
       Point destino = geometryFactory.createPoint(
         new Coordinate(rotaTeste.getLonDestino(), rotaTeste.getLatDestino())
       );
+
+      if (rotaTeste.getParadas() != null && !rotaTeste.getParadas().isEmpty()) {
+        List<ParadaDto> paradasOrdenadas = rotaTeste.getParadas().stream()
+          .sorted(Comparator.comparingInt(ParadaDto::getIndexOrder))
+          .toList();
+
+        List<List<Double>> coordinates = new ArrayList<>();
+        coordinates.add(Arrays.asList(saida.getX(), saida.getY()));
+        for (ParadaDto parada : paradasOrdenadas) {
+          coordinates.add(Arrays.asList(parada.getLongitude(), parada.getLatitude()));
+        }
+        coordinates.add(Arrays.asList(destino.getX(), destino.getY()));
+
+        return rotaService.getRotaComParadas(coordinates);
+      }
+
       return rotaService.getRota(saida, destino);
     }
 
