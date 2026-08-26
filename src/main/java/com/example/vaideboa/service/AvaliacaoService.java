@@ -15,6 +15,7 @@ import com.example.vaideboa.model.Avaliacao;
 import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.Reserva;
 import com.example.vaideboa.model.User;
+import com.example.vaideboa.model.enums.Ranking;
 import com.example.vaideboa.model.enums.TipoAvaliacao;
 import com.example.vaideboa.repository.AvaliacaoRepository;
 import com.example.vaideboa.repository.CaronaRepository;
@@ -25,14 +26,12 @@ import com.example.vaideboa.repository.UserRepository;
 public class AvaliacaoService {
 private final UserRepository userRepository;
 private final AvaliacaoRepository avaliacaoRepository;
-private final CaronaRepository caronaRepository;
 private final ReservaRepository reservaRepository;
 
     public AvaliacaoService(UserRepository userRepository, AvaliacaoRepository avaliacaoRepository,
         CaronaRepository caronaRepository, ReservaRepository reservaRepository) {
     this.userRepository = userRepository;
     this.avaliacaoRepository = avaliacaoRepository;
-    this.caronaRepository = caronaRepository;
     this.reservaRepository = reservaRepository;
 }
 
@@ -197,6 +196,17 @@ private final ReservaRepository reservaRepository;
         ? 0
         : somaPassageiro / notasPassageiro.size();
 
+        if(numeroDeCaronas <= 10){
+            rankingDto.setRankingMotorista(Ranking.NOVATO);
+        }
+        else if(numeroDeCaronas <= 20){
+            rankingDto.setRankingMotorista(Ranking.INTERMEDIARIO);  
+        }
+        else{
+            rankingDto.setRankingMotorista(Ranking.EXPERIENTE);
+        }
+        rankingDto.setNumAvaliacoesMotorista(notasMotorista.size());
+        rankingDto.setNumAvaliacoesPassageiro(notasPassageiro.size());
         rankingDto.setNumViagensMotorista(numeroDeCaronas);
         rankingDto.setNumViagensPassageiro(numeroDeReservas);
         rankingDto.setNotaMotorista(mediaMotorista);
