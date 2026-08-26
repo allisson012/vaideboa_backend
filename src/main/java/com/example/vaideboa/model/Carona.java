@@ -57,5 +57,8 @@ public class Carona {
    private Boolean notificado30min = false;
    @Enumerated(EnumType.STRING)
    private StatusCarona statusCarona;
-
+   @OneToOne(cascade = CascadeType.ALL)
+   @JoinColumn(name = "trajeto_compartilhado_id")
+   @JsonIgnore
+   private TrajetoCompartilhado trajetoCompartilhado;
 }
