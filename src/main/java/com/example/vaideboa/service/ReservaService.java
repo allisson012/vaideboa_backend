@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.example.vaideboa.Dtos.BuscaCaronaDto;
 import com.example.vaideboa.Dtos.BuscaRetornaDto;
 import com.example.vaideboa.Dtos.PontoParadaRetornoDto;
+import com.example.vaideboa.Dtos.RankingDto;
 import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.PontoParada;
 import com.example.vaideboa.model.Rota;
@@ -20,16 +21,18 @@ import com.example.vaideboa.repository.RotaRepository;
 
 @Service
 public class ReservaService {
+    private final AvaliacaoService avaliacaoService;
     private final RotaRepository rotaRepository;
     private final CaronaRepository caronaRepository;
     private final GeometryFactory geometryFactory = new GeometryFactory();
     private final RotaMapperService rotaMapperService;
 
     public ReservaService(RotaRepository rotaRepository, CaronaRepository caronaRepository,
-            RotaMapperService rotaMapperService) {
+            RotaMapperService rotaMapperService, AvaliacaoService avaliacaoService) {
         this.rotaRepository = rotaRepository;
         this.caronaRepository = caronaRepository;
         this.rotaMapperService = rotaMapperService;
+        this.avaliacaoService = avaliacaoService;
     }
 
     public List<BuscaRetornaDto> buscarCaronas(BuscaCaronaDto buscaDto){
@@ -80,6 +83,8 @@ public class ReservaService {
                 paradaDto.setLonPonto(parada.getLocalizacao().getX());
                 paradaDto.setTextoPonto(parada.getTextoPonto());
                 paradasDto.add(paradaDto);
+                RankingDto rankingDto = avaliacaoService.calculaRanking(carona.getMotorista());
+                buscaRetornoDto.setAvaliacaoMotorista(rankingDto);
                 }
                 buscaRetornoDto.setParadas(paradasDto);
                 buscasRetornosDto.add(buscaRetornoDto);
