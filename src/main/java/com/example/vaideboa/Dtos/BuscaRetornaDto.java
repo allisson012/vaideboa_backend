@@ -9,6 +9,7 @@ public class BuscaRetornaDto {
     private  LocalTime hora;
     private  Long idMotorista;
     private  String nomeMotorista;
+    private  RankingDto avaliacaoMotorista;
     private  Long idRota;
     private  double saidaLat;
     private  double saidaLon;
@@ -17,6 +18,14 @@ public class BuscaRetornaDto {
     private  Double distancia;
     private  Double duracao;
     private  List<PontoParadaRetornoDto> paradas;
+
+    public RankingDto getAvaliacaoMotorista() {
+        return avaliacaoMotorista;
+    }
+
+    public void setAvaliacaoMotorista(RankingDto avaliacaoMotorista) {
+        this.avaliacaoMotorista = avaliacaoMotorista;
+    }
     
     public Long getIdMotorista() {
         return idMotorista;
