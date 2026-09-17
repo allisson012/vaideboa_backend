@@ -22,6 +22,7 @@ public class CaronaRetornoDto {
     // id do user se for para o motorista 
     private String nome;
     private String genero;
+    private CarroRetornoDto carro;
     private List<PontoParadaRetornoDto> paradas;
     // carro
     // foto
@@ -120,6 +121,12 @@ public class CaronaRetornoDto {
     }
     public void setGenero(String genero) {
         this.genero = genero;
+    }
+    public CarroRetornoDto getCarro() {
+        return carro;
+    }
+    public void setCarro(CarroRetornoDto carro) {
+        this.carro = carro;
     }
     public Long getIdRota() {
         return idRota;
