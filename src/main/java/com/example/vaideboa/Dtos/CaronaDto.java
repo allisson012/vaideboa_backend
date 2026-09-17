@@ -4,8 +4,14 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+
 public class CaronaDto {
+    @Min(value = 1, message = "Mínimo de 1 vaga")
     private final int qntAssentos;
+    @NotNull(message = "Veículo é obrigatório")
+    private final Long idCarro;
     private final LocalDate data;
     private final LocalTime hora;
     private final double saidaLat;
@@ -14,9 +20,10 @@ public class CaronaDto {
     private final double destinoLng;
     private final List<ParadaDto> paradas;
 
-    public CaronaDto(int qntAssentos, LocalDate data, LocalTime hora, double saidaLat, double saidaLng,
+    public CaronaDto(int qntAssentos, Long idCarro, LocalDate data, LocalTime hora, double saidaLat, double saidaLng,
             double destinoLat, double destinoLng, List<ParadaDto> paradas) {
         this.qntAssentos = qntAssentos;
+        this.idCarro = idCarro;
         this.data = data;
         this.hora = hora;
         this.saidaLat = saidaLat;
@@ -28,6 +35,9 @@ public class CaronaDto {
     
     public int getQntAssentos() {
         return qntAssentos;
+    }
+    public Long getIdCarro() {
+        return idCarro;
     }
     public LocalDate getData() {
         return data;
