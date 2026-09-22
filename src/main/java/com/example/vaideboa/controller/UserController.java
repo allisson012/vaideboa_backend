@@ -47,6 +47,16 @@ public class UserController {
     return ResponseEntity.ok(userService.buscarUserPorUsername(username));
     }
 
+    @GetMapping("/perfil/{idUsuario}")
+    public ResponseEntity<?> buscarPerfilPublico(@org.springframework.web.bind.annotation.PathVariable Long idUsuario,
+            @RequestParam Long idCarona, Authentication authentication) {
+        ApiResponse resposta = userService.buscarPerfilPublico(idUsuario, idCarona, authentication.getName());
+        if (!resposta.isRetorno()) {
+            return ResponseEntity.status(403).body(resposta.getMensagem());
+        }
+        return ResponseEntity.ok(resposta.getDados());
+    }
+
     @DeleteMapping("/excluir")
     public ResponseEntity<?> excluirUsuario(Authentication auth){
         String username = auth.getName();
