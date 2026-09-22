@@ -21,6 +21,8 @@ public class CaronaRetornoDto {
     // trajeto
     // id do user se for para o motorista 
     private String nome;
+    private Long idMotorista;
+    private String fotoMotorista;
     private String genero;
     private CarroRetornoDto carro;
     private List<PontoParadaRetornoDto> paradas;
@@ -115,6 +117,18 @@ public class CaronaRetornoDto {
     }
     public void setNome(String nome) {
         this.nome = nome;
+    }
+    public Long getIdMotorista() {
+        return idMotorista;
+    }
+    public void setIdMotorista(Long idMotorista) {
+        this.idMotorista = idMotorista;
+    }
+    public String getFotoMotorista() {
+        return fotoMotorista;
+    }
+    public void setFotoMotorista(String fotoMotorista) {
+        this.fotoMotorista = fotoMotorista;
     }
     public String getGenero() {
         return genero;

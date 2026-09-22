@@ -10,15 +10,19 @@ import com.example.vaideboa.Dtos.AlterarSenhaDto;
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.EditarUserDto;
 import com.example.vaideboa.Dtos.PreferenciasDto;
+import com.example.vaideboa.Dtos.PerfilPublicoDto;
 import com.example.vaideboa.Dtos.RankingDto;
 import com.example.vaideboa.Dtos.UserDto;
 import com.example.vaideboa.Dtos.UserRetornoDto;
 import com.example.vaideboa.exception.EmailJaCadastradoException;
 import com.example.vaideboa.model.Preferencias;
+import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.User;
 import com.example.vaideboa.model.enums.Generos;
 import com.example.vaideboa.model.enums.NivelPreferencia;
 import com.example.vaideboa.repository.UserRepository;
+import com.example.vaideboa.repository.CaronaRepository;
+import com.example.vaideboa.repository.PedidoCaronaRepository;
 import com.example.vaideboa.validator.CpfValidator;
 import com.example.vaideboa.validator.SenhaValidator;
 
@@ -29,14 +33,19 @@ public class UserService {
     private final CpfValidator cpfValidator;
     private final SenhaValidator senhaValidator;
     private final AvaliacaoService avaliacaoService;
+    private final CaronaRepository caronaRepository;
+    private final PedidoCaronaRepository pedidoCaronaRepository;
 
     public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, CpfValidator cpfValidator,
-            SenhaValidator senhaValidator, AvaliacaoService avaliacaoService) {
+            SenhaValidator senhaValidator, AvaliacaoService avaliacaoService, CaronaRepository caronaRepository,
+            PedidoCaronaRepository pedidoCaronaRepository) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.cpfValidator = cpfValidator;
         this.senhaValidator = senhaValidator;
         this.avaliacaoService = avaliacaoService;
+        this.caronaRepository = caronaRepository;
+        this.pedidoCaronaRepository = pedidoCaronaRepository;
     }
 
     public boolean cadastrarUser(UserDto userDto){
@@ -100,6 +109,36 @@ public class UserService {
             rankingDto
         );
         return userRetornoDto;
+    }
+
+    public ApiResponse buscarPerfilPublico(Long idUsuario, Long idCarona, String username) {
+        User solicitante = userRepository.findByUsernameAndAtivoTrue(username).orElse(null);
+        User perfil = userRepository.findById(idUsuario).filter(User::isAtivo).orElse(null);
+        Carona carona = caronaRepository.findById(idCarona).orElse(null);
+        if (solicitante == null || perfil == null || carona == null) {
+            return new ApiResponse(false, "Perfil não encontrado");
+        }
+
+        boolean perfilDoMotorista = carona.getMotorista().getId().equals(perfil.getId());
+        boolean solicitanteEMotorista = carona.getMotorista().getId().equals(solicitante.getId());
+        boolean solicitanteEPerfil = solicitante.getId().equals(perfil.getId());
+        boolean passageiroDaCarona = pedidoCaronaRepository.existsByPassageiroAndCarona(perfil, carona);
+        if (!perfilDoMotorista && !solicitanteEPerfil && !(solicitanteEMotorista && passageiroDaCarona)) {
+            return new ApiResponse(false, "Usuário não tem acesso a este perfil");
+        }
+
+        Preferencias preferencias = perfil.getPreferencia();
+        PreferenciasDto preferenciasDto = new PreferenciasDto(
+            preferencias != null && preferencias.getConversa() != null ? preferencias.getConversa() : NivelPreferencia.TALVEZ,
+            preferencias != null && preferencias.getMusica() != null ? preferencias.getMusica() : NivelPreferencia.TALVEZ,
+            preferencias != null && preferencias.getCigarro() != null ? preferencias.getCigarro() : NivelPreferencia.TALVEZ,
+            preferencias != null && preferencias.getAnimais() != null ? preferencias.getAnimais() : NivelPreferencia.TALVEZ
+        );
+        PerfilPublicoDto perfilDto = new PerfilPublicoDto(
+            perfil.getId(), perfil.getNome(), perfil.getFoto(), perfil.getGenero().getDescricao(),
+            preferenciasDto, avaliacaoService.calculaRanking(perfil)
+        );
+        return new ApiResponse(true, "Perfil encontrado com sucesso", perfilDto);
     }
 
     public boolean excluirUsuario (String username){

@@ -361,6 +361,8 @@ public class CaronaService {
       dto.setDistancia(carona.getRota().getDistancia());
       dto.setDuracao(carona.getRota().getDuracao());
       dto.setNome(carona.getMotorista().getNome());
+      dto.setIdMotorista(carona.getMotorista().getId());
+      dto.setFotoMotorista(carona.getMotorista().getFoto());
       dto.setGenero(carona.getMotorista().getGenero().getDescricao());
       if (carona.getCarro() != null) {
         dto.setCarro(CarroRetornoDto.from(carona.getCarro(), !carona.getMotorista().getId().equals(user.getId())));
