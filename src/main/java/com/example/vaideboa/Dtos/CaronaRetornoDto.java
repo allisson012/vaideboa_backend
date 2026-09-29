@@ -2,6 +2,8 @@ package com.example.vaideboa.Dtos;
 
 import java.util.List;
 
+import com.example.vaideboa.model.enums.StatusCarona;
+
 public class CaronaRetornoDto {
     private Long idCarona;
     private int qntAssentos;
@@ -9,6 +11,7 @@ public class CaronaRetornoDto {
     private String data;
     private String hora;
     private boolean realizado;
+    private StatusCarona statusCarona;
     private double latSaida; 
     private double lonSaida;
     private String saidaTexto;
@@ -63,6 +66,12 @@ public class CaronaRetornoDto {
     }
     public void setRealizado(boolean realizado) {
         this.realizado = realizado;
+    }
+    public StatusCarona getStatusCarona() {
+        return statusCarona;
+    }
+    public void setStatusCarona(StatusCarona statusCarona) {
+        this.statusCarona = statusCarona;
     }
     public double getLatSaida() {
         return latSaida;

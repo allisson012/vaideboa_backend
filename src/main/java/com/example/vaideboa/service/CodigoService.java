@@ -55,6 +55,9 @@ public class CodigoService {
             Set<String> usados = new HashSet<>();
 
             for (Reserva reserva : reservas) {
+                if (reserva.getReservaCodigo() != null) {
+                    continue;
+                }
 
                 String codigoEmbarque;
                 String codigoDesembarque;
@@ -87,6 +90,10 @@ public class CodigoService {
                 codigos.add(reservaCodigo);
 
                 reserva.setJaEnviadoCodigoInicio(true);
+            }
+
+            if (codigos.isEmpty()) {
+                return new ApiResponse(true, "Códigos já foram gerados para as reservas");
             }
 
             reservaCodigoRepository.saveAll(codigos);

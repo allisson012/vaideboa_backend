@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import com.example.vaideboa.Dtos.LocalizacaoDto;
 import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.TrajetoCompartilhado;
+import com.example.vaideboa.model.enums.StatusCarona;
 import com.example.vaideboa.model.enums.StatusCompartilhamento;
 import com.example.vaideboa.repository.CaronaRepository;
 import com.example.vaideboa.repository.TrajetoCompartilhadoRepository;
@@ -32,9 +33,14 @@ public class CompartilhamentoService {
     private final CaronaRepository caronaRepository;
     private final TrajetoCompartilhadoRepository trajetoCompartilhadoRepository;
     
-    public void atualizarLocalizacao(Long idCarona, double latitude, double longitude) {
-        System.out.println("latidute = "+latitude);
-        System.out.println("longitude = "+longitude);
+    public void atualizarLocalizacao(Long idCarona, double latitude, double longitude, String username) {
+        Optional<Carona> caronaOpt = caronaRepository.findById(idCarona);
+        if (caronaOpt.isEmpty()
+                || !StatusCarona.EM_ANDAMENTO.equals(caronaOpt.get().getStatusCarona())
+                || !caronaOpt.get().getMotorista().getUsername().equals(username)) {
+            return;
+        }
+
         LocalizacaoDto localizacao = new LocalizacaoDto(latitude, longitude);
         // para enviar a localização para outros usuarios
         List<Coordinate> trajeto = trajetosEmAndamento.get(idCarona);
