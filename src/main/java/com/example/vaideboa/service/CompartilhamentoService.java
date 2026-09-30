@@ -23,9 +23,11 @@ import com.example.vaideboa.repository.CaronaRepository;
 import com.example.vaideboa.repository.TrajetoCompartilhadoRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CompartilhamentoService {
 
     private final SimpMessagingTemplate messagingTemplate;
@@ -35,19 +37,30 @@ public class CompartilhamentoService {
     
     public void atualizarLocalizacao(Long idCarona, double latitude, double longitude, String username) {
         Optional<Carona> caronaOpt = caronaRepository.findById(idCarona);
-        if (caronaOpt.isEmpty()
-                || !StatusCarona.EM_ANDAMENTO.equals(caronaOpt.get().getStatusCarona())
-                || !caronaOpt.get().getMotorista().getUsername().equals(username)) {
+        if (caronaOpt.isEmpty()) {
+            log.warn("Localização ignorada: carona {} não encontrada. Motorista: {}", idCarona, username);
             return;
         }
 
-        LocalizacaoDto localizacao = new LocalizacaoDto(latitude, longitude);
-        // para enviar a localização para outros usuarios
+        Carona carona = caronaOpt.get();
+        if (!StatusCarona.EM_ANDAMENTO.equals(carona.getStatusCarona())) {
+            log.warn("Localização ignorada: carona {} não está em andamento. Status: {}", idCarona, carona.getStatusCarona());
+            return;
+        }
+
+        if (!carona.getMotorista().getUsername().equals(username)) {
+            log.warn("Localização ignorada: usuário {} não é o motorista da carona {}", username, idCarona);
+            return;
+        }
+
         List<Coordinate> trajeto = trajetosEmAndamento.get(idCarona);
-        if(trajeto == null){
+        if (trajeto == null) {
+            log.warn("Localização ignorada: não há compartilhamento ativo em memória para a carona {}", idCarona);
             return;
         }
 
+        log.info("Atualizando localização da carona {}: latitude={}, longitude={}", idCarona, latitude, longitude);
+        LocalizacaoDto localizacao = new LocalizacaoDto(latitude, longitude);
         messagingTemplate.convertAndSend("/topic/carona/" + idCarona, localizacao);
 
         Coordinate novoPonto = new Coordinate(longitude, latitude);
@@ -101,7 +114,7 @@ public class CompartilhamentoService {
 
     public void finalizarCompartilhamento(Long idCarona){
         List<Coordinate> trajeto = trajetosEmAndamento.get(idCarona);
-        System.out.println("Quantidade de pontos: " + trajeto.size());
+        log.info("Finalizando compartilhamento da carona {} com {} pontos", idCarona, trajeto == null ? 0 : trajeto.size());
         Optional<Carona> caronaOpt = caronaRepository.findById(idCarona);
         if(caronaOpt.isEmpty()){
             return;
