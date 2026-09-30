@@ -139,6 +139,7 @@ public class CaronaService {
       carona.setMotorista(user);
       carona.setData(caronaDto.getData());
       carona.setHora(caronaDto.getHora());
+      // calcular a recomendacao de preco
       carona.setRota(rotaSalva);
       caronaRepository.save(carona);
       return true;

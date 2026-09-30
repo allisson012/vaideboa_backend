@@ -44,4 +44,7 @@ public class CarroDto {
     @Size(max = 255, message = "Descrição muito longa")
     private String descricao;
 
+    private double consumo;
+    
+
 }

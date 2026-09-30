@@ -36,6 +36,7 @@ public class CarroService {
         carro.setAtivo(true);
         carro.setCor(carroDto.getCor());
         carro.setDescricao(carroDto.getDescricao());
+        carro.setConsumo(carroDto.getConsumo());
         carro.setDono(user);
         carro.setFotoVeiculo(carroDto.getFotoVeiculo());
         carro.setMarca(carroDto.getMarca());
