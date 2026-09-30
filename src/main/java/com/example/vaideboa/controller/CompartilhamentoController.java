@@ -1,7 +1,11 @@
 package com.example.vaideboa.controller;
 
+import java.security.Principal;
+import java.util.List;
+
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 
@@ -15,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class CompartilhamentoController {
 
     private final CompartilhamentoService compartilhamentoService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/carona/{idCarona}/localizacao")
     public void atualizarLocalizacao(@DestinationVariable Long idCarona,LocalizacaoDto localizacao, Authentication auth) {
@@ -22,5 +27,16 @@ public class CompartilhamentoController {
         System.out.println("CARONA: " + idCarona);
         System.out.println("LOCALIZAÇÃO: " + localizacao);
         compartilhamentoService.atualizarLocalizacao(idCarona, localizacao.getLatitude(), localizacao.getLongitude());
+    }
+
+    @MessageMapping("/carona/{idCarona}/trajeto")
+    public void solicitarTrajetoAtual(@DestinationVariable Long idCarona, Principal principal) {
+        List<LocalizacaoDto> trajeto = compartilhamentoService.obterTrajetoAtual(idCarona);
+
+        messagingTemplate.convertAndSendToUser(
+            principal.getName(),
+            "/queue/carona/" + idCarona + "/trajeto",
+            trajeto
+        );
     }
 }

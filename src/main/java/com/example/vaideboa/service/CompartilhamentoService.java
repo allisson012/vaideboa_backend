@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -72,7 +73,7 @@ public class CompartilhamentoService {
         carona.setTrajetoCompartilhado(trajetoCompartilhado);
         trajetoCompartilhadoRepository.save(trajetoCompartilhado);
         caronaRepository.save(carona);
-        trajetosEmAndamento.put(idCarona, new ArrayList<>());
+        trajetosEmAndamento.put(idCarona, new CopyOnWriteArrayList<>());
     }
 
     public void removerCompartilhamento(Long idCarona){
@@ -147,5 +148,14 @@ public class CompartilhamentoService {
         double a =Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +Math.cos(lat1)* Math.cos(lat2)* Math.sin(deltaLon / 2)* Math.sin(deltaLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a),Math.sqrt(1 - a));
         return raioTerra * c;
+    }
+
+    public List<LocalizacaoDto> obterTrajetoAtual(Long idCarona) {
+    List<Coordinate> trajeto = trajetosEmAndamento.get(idCarona);
+    
+        if (trajeto == null) {
+            return List.of();
+        }
+        return trajeto.stream().map(c -> new LocalizacaoDto(c.getY(), c.getX())).toList();
     }
 }
