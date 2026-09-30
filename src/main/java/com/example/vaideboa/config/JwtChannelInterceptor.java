@@ -73,6 +73,9 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
             validarInscricao(accessor);
         }
+        if (StompCommand.SEND.equals(accessor.getCommand())) {
+            validarSolicitacaoTrajeto(accessor);
+        }
 
         return message;
     }
@@ -107,7 +110,28 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
         User user = userOpt.get();
         Carona carona = caronaOpt.get();
         return carona.getMotorista().getId().equals(user.getId())
-                || reservaRepository.findByCaronaAndPassageiro(carona, user).isPresent();
+                || reservaRepository.findByCaronaAndPassageiro(carona, user)
+                        .map(reserva -> reserva.isAprovado())
+                        .orElse(false);
+    }
+
+    private void validarSolicitacaoTrajeto(StompHeaderAccessor accessor) {
+        String destino = accessor.getDestination();
+        String prefixo = "/app/carona/";
+        String sufixo = "/trajeto";
+        if (destino == null || !destino.startsWith(prefixo) || !destino.endsWith(sufixo)) {
+            return;
+        }
+
+        String id = destino.substring(prefixo.length(), destino.length() - sufixo.length());
+        Authentication authentication = (Authentication) accessor.getUser();
+        try {
+            if (authentication == null || !podeAcompanhar(authentication.getName(), Long.valueOf(id))) {
+                throw new MessageDeliveryException("Usuário não pode acompanhar esta carona");
+            }
+        } catch (NumberFormatException exception) {
+            throw new MessageDeliveryException("Destino de carona inválido");
+        }
     }
 
 }

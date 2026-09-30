@@ -1,12 +1,12 @@
 package com.example.vaideboa.service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -53,9 +53,10 @@ public class CompartilhamentoService {
             return;
         }
 
-        List<Coordinate> trajeto = trajetosEmAndamento.get(idCarona);
+        List<Coordinate> trajeto = trajetosEmAndamento.computeIfAbsent(idCarona,
+                ignored -> restaurarTrajeto(carona));
         if (trajeto == null) {
-            log.warn("Localização ignorada: não há compartilhamento ativo em memória para a carona {}", idCarona);
+            log.warn("Localização ignorada: não há compartilhamento ativo para a carona {}", idCarona);
             return;
         }
 
@@ -72,26 +73,31 @@ public class CompartilhamentoService {
         }
 
         trajeto.add(novoPonto);
-        
+        salvarTrajeto(trajeto, carona);
     }
+
     public void iniciarCompartilhamento(Long idCarona) {
-        TrajetoCompartilhado trajetoCompartilhado = new TrajetoCompartilhado();
         Optional<Carona> caronaOpt = caronaRepository.findById(idCarona);
         if(caronaOpt.isEmpty()){
             return;
         }
         Carona carona = caronaOpt.get();
         Optional<TrajetoCompartilhado> trajetoCompartilhadoOpt = trajetoCompartilhadoRepository.findByCarona(carona);
-        if(!trajetoCompartilhadoOpt.isEmpty()){
+        if (trajetoCompartilhadoOpt.isPresent()) {
+            TrajetoCompartilhado trajetoCompartilhado = trajetoCompartilhadoOpt.get();
+            if (StatusCompartilhamento.EM_ANDAMENTO.equals(trajetoCompartilhado.getStatusCompartilhamento())) {
+                trajetosEmAndamento.putIfAbsent(idCarona, restaurarTrajeto(trajetoCompartilhado));
+            }
             return;
         }
+        TrajetoCompartilhado trajetoCompartilhado = new TrajetoCompartilhado();
         trajetoCompartilhado.setCarona(carona);
         trajetoCompartilhado.setInicio(LocalDateTime.now());
         trajetoCompartilhado.setStatusCompartilhamento(StatusCompartilhamento.EM_ANDAMENTO);
         carona.setTrajetoCompartilhado(trajetoCompartilhado);
         trajetoCompartilhadoRepository.save(trajetoCompartilhado);
         caronaRepository.save(carona);
-        trajetosEmAndamento.put(idCarona, new ArrayList<>());
+        trajetosEmAndamento.put(idCarona, new CopyOnWriteArrayList<>());
     }
 
     public void removerCompartilhamento(Long idCarona){
@@ -113,13 +119,14 @@ public class CompartilhamentoService {
     }
 
     public void finalizarCompartilhamento(Long idCarona){
-        List<Coordinate> trajeto = trajetosEmAndamento.get(idCarona);
-        log.info("Finalizando compartilhamento da carona {} com {} pontos", idCarona, trajeto == null ? 0 : trajeto.size());
         Optional<Carona> caronaOpt = caronaRepository.findById(idCarona);
         if(caronaOpt.isEmpty()){
             return;
         }
         Carona carona = caronaOpt.get();
+        List<Coordinate> trajeto = trajetosEmAndamento.computeIfAbsent(idCarona,
+                ignored -> restaurarTrajeto(carona));
+        log.info("Finalizando compartilhamento da carona {} com {} pontos", idCarona, trajeto == null ? 0 : trajeto.size());
         Optional<TrajetoCompartilhado> trajetoCompartilhadoOpt = trajetoCompartilhadoRepository.findByCarona(carona);
         if(trajetoCompartilhadoOpt.isEmpty()){
             return;
@@ -127,9 +134,9 @@ public class CompartilhamentoService {
         TrajetoCompartilhado trajetoCompartilhado = trajetoCompartilhadoOpt.get();
         trajetoCompartilhado.setFim(LocalDateTime.now());
         trajetoCompartilhado.setStatusCompartilhamento(StatusCompartilhamento.FINALIZADO);
-        if (trajeto != null && trajeto.size() >= 2) {
-            trajetoCompartilhado.setDistancia_percorrida(calcularDistancia(trajeto));
+        if (trajeto != null && !trajeto.isEmpty()) {
             trajetoCompartilhado.setTrajeto(criarLineString(trajeto));
+            trajetoCompartilhado.setDistancia_percorrida(calcularDistancia(trajeto));
         }
 
         trajetoCompartilhadoRepository.save(trajetoCompartilhado);
@@ -137,11 +144,13 @@ public class CompartilhamentoService {
     }
 
     public LineString criarLineString(List<Coordinate> trajeto){
-        if(trajeto == null || trajeto.size() < 2){
+        if(trajeto == null || trajeto.isEmpty()){
             return null;
         }
         GeometryFactory geometryFactory = new GeometryFactory();
-        Coordinate[] coordenadas = trajeto.toArray(new Coordinate[0]);
+        Coordinate[] coordenadas = trajeto.size() == 1
+                ? new Coordinate[] { trajeto.getFirst(), trajeto.getFirst() }
+                : trajeto.toArray(new Coordinate[0]);
         LineString lineString = geometryFactory.createLineString(coordenadas);
         lineString.setSRID(4326);
         return lineString;
@@ -166,5 +175,44 @@ public class CompartilhamentoService {
         double a =Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +Math.cos(lat1)* Math.cos(lat2)* Math.sin(deltaLon / 2)* Math.sin(deltaLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a),Math.sqrt(1 - a));
         return raioTerra * c;
+    }
+    public List<LocalizacaoDto> obterTrajetoAtual(Long idCarona) {
+        Optional<Carona> caronaOpt = caronaRepository.findById(idCarona);
+        if (caronaOpt.isEmpty()) {
+            return List.of();
+        }
+        return restaurarTrajeto(caronaOpt.get()).stream()
+                .map(coordenada -> new LocalizacaoDto(coordenada.getY(), coordenada.getX()))
+                .toList();
+    }
+
+    private List<Coordinate> restaurarTrajeto(Carona carona) {
+        return trajetoCompartilhadoRepository.findByCarona(carona)
+                .filter(trajeto -> StatusCompartilhamento.EM_ANDAMENTO.equals(trajeto.getStatusCompartilhamento()))
+                .map(this::restaurarTrajeto)
+                .orElse(null);
+    }
+
+    private List<Coordinate> restaurarTrajeto(TrajetoCompartilhado trajetoCompartilhado) {
+        List<Coordinate> coordenadas = new CopyOnWriteArrayList<>();
+        LineString linha = trajetoCompartilhado.getTrajeto();
+        if (linha == null) {
+            return coordenadas;
+        }
+
+        for (Coordinate coordenada : linha.getCoordinates()) {
+            if (coordenadas.isEmpty() || !coordenadas.getLast().equals2D(coordenada)) {
+                coordenadas.add(new Coordinate(coordenada));
+            }
+        }
+        return coordenadas;
+    }
+
+    private void salvarTrajeto(List<Coordinate> trajetos, Carona carona) {
+        trajetoCompartilhadoRepository.findByCarona(carona).ifPresent(trajetoCompartilhado -> {
+            trajetoCompartilhado.setTrajeto(criarLineString(trajetos));
+            trajetoCompartilhado.setDistancia_percorrida(calcularDistancia(trajetos));
+            trajetoCompartilhadoRepository.save(trajetoCompartilhado);
+        });
     }
 }

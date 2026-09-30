@@ -37,6 +37,7 @@ public class Carro {
     @Min(1900)
     @Max(2100)
     private Integer ano;
+    private Integer fipeId;
     private String fotoVeiculo;
     // talvez salvar a foto do veiculo
     @Min(1)
@@ -51,4 +52,5 @@ public class Carro {
     @JsonIgnore
     @OneToMany(mappedBy = "carro")
     private List<Carona> caronas;
+    private Double consumo;
 }
