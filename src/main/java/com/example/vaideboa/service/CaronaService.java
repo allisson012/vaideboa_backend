@@ -173,6 +173,13 @@ public class CaronaService {
       if(!carona.getMotorista().getId().equals(user.getId())){
         return new ApiResponse(false,"Usuário não tem acesso a essa carona");
       }
+      if (StatusCarona.EM_ANDAMENTO.equals(carona.getStatusCarona())) {
+        compartilhamentoService.iniciarCompartilhamento(idCarona);
+        return new ApiResponse(true, "Carona já está em andamento");
+      }
+      if (!StatusCarona.EM_ESPERA.equals(carona.getStatusCarona())) {
+        return new ApiResponse(false, "Carona não pode ser iniciada no estado atual");
+      }
       if(!carona.getData().equals(LocalDate.now())){
         return new ApiResponse(false,"Carona fora da data agendada");
       }
@@ -186,7 +193,7 @@ public class CaronaService {
       }
       if(agora.isAfter(horaSuperior)){
         return new ApiResponse(false,"Não é mais possível iniciar a carona. O horário limite foi excedido.");
-      } 
+      }
       carona.setStatusCarona(StatusCarona.EM_ANDAMENTO);
       ApiResponse retorno = codigoService.gerarCodigos(carona.getReservas());
       if(!retorno.isRetorno()){
@@ -215,6 +222,7 @@ public class CaronaService {
         return new ApiResponse(false,"Usuário não tem acesso a carona pois não é o motorista", null);
       }
       carona.setRealizado(true);
+      carona.setStatusCarona(StatusCarona.CONCLUIDA);
       boolean sucesso = avaliacaoService.criarAvaliacoes(carona);
       if(!sucesso){
           return new ApiResponse(false, "Erro ao criar avaliações", null);
@@ -353,6 +361,7 @@ public class CaronaService {
       dto.setQntAssentos(carona.getQntAssentos());
       dto.setVagasDisponiveis(carona.getVagasDisponiveis());
       dto.setRealizado(carona.isRealizado());
+      dto.setStatusCarona(carona.getStatusCarona());
       dto.setLatSaida(carona.getRota().getSaida().getY());
       dto.setLonSaida(carona.getRota().getSaida().getX());
       dto.setSaidaTexto(carona.getRota().getSaidaTexto());

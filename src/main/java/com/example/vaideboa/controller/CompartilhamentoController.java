@@ -22,11 +22,8 @@ public class CompartilhamentoController {
     private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/carona/{idCarona}/localizacao")
-    public void atualizarLocalizacao(@DestinationVariable Long idCarona,LocalizacaoDto localizacao, Authentication auth) {
-        System.out.println("USUÁRIO: " + auth.getName());
-        System.out.println("CARONA: " + idCarona);
-        System.out.println("LOCALIZAÇÃO: " + localizacao);
-        compartilhamentoService.atualizarLocalizacao(idCarona, localizacao.getLatitude(), localizacao.getLongitude());
+    public void atualizarLocalizacao(@DestinationVariable Long idCarona, LocalizacaoDto localizacao, Authentication auth) {
+        compartilhamentoService.atualizarLocalizacao(idCarona, localizacao.getLatitude(), localizacao.getLongitude(), auth.getName());
     }
 
     @MessageMapping("/carona/{idCarona}/trajeto")
