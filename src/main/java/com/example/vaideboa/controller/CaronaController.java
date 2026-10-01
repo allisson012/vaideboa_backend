@@ -15,6 +15,7 @@ import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.CaronaDto;
 import com.example.vaideboa.service.CaronaService;
 
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/carona")
@@ -26,7 +27,7 @@ public class CaronaController {
     }
 
     @PostMapping("/cadastrar")
-    public ResponseEntity<?> cadastrarCarona(@RequestBody CaronaDto caronaDto, Authentication auth){
+    public ResponseEntity<?> cadastrarCarona(@Valid @RequestBody CaronaDto caronaDto, Authentication auth){
         String username = auth.getName();
         boolean retorno = caronaService.cadastrarCarona(caronaDto, username);
         if(retorno == false)

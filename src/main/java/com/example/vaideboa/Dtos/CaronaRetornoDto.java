@@ -2,6 +2,8 @@ package com.example.vaideboa.Dtos;
 
 import java.util.List;
 
+import com.example.vaideboa.model.enums.StatusCarona;
+
 public class CaronaRetornoDto {
     private Long idCarona;
     private int qntAssentos;
@@ -9,6 +11,7 @@ public class CaronaRetornoDto {
     private String data;
     private String hora;
     private boolean realizado;
+    private StatusCarona statusCarona;
     private double latSaida; 
     private double lonSaida;
     private String saidaTexto;
@@ -21,7 +24,10 @@ public class CaronaRetornoDto {
     // trajeto
     // id do user se for para o motorista 
     private String nome;
+    private Long idMotorista;
+    private String fotoMotorista;
     private String genero;
+    private CarroRetornoDto carro;
     private List<PontoParadaRetornoDto> paradas;
     // carro
     // foto
@@ -60,6 +66,12 @@ public class CaronaRetornoDto {
     }
     public void setRealizado(boolean realizado) {
         this.realizado = realizado;
+    }
+    public StatusCarona getStatusCarona() {
+        return statusCarona;
+    }
+    public void setStatusCarona(StatusCarona statusCarona) {
+        this.statusCarona = statusCarona;
     }
     public double getLatSaida() {
         return latSaida;
@@ -115,11 +127,29 @@ public class CaronaRetornoDto {
     public void setNome(String nome) {
         this.nome = nome;
     }
+    public Long getIdMotorista() {
+        return idMotorista;
+    }
+    public void setIdMotorista(Long idMotorista) {
+        this.idMotorista = idMotorista;
+    }
+    public String getFotoMotorista() {
+        return fotoMotorista;
+    }
+    public void setFotoMotorista(String fotoMotorista) {
+        this.fotoMotorista = fotoMotorista;
+    }
     public String getGenero() {
         return genero;
     }
     public void setGenero(String genero) {
         this.genero = genero;
+    }
+    public CarroRetornoDto getCarro() {
+        return carro;
+    }
+    public void setCarro(CarroRetornoDto carro) {
+        this.carro = carro;
     }
     public Long getIdRota() {
         return idRota;

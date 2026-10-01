@@ -1,6 +1,7 @@
 package com.example.vaideboa.service;
 
 import com.example.vaideboa.repository.CaronaRepository;
+import com.example.vaideboa.repository.CarroRepository;
 import com.example.vaideboa.repository.PontoParadaRepository;
 import com.example.vaideboa.repository.RotaRepository;
 import com.example.vaideboa.repository.AvaliacaoRepository;
@@ -24,11 +25,13 @@ import org.springframework.stereotype.Service;
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.CaronaDto;
 import com.example.vaideboa.Dtos.CaronaRetornoDto;
+import com.example.vaideboa.Dtos.CarroRetornoDto;
 import com.example.vaideboa.Dtos.ParadaDto;
 import com.example.vaideboa.Dtos.PontoParadaRetornoDto;
 import com.example.vaideboa.Dtos.RotaInfoDto;
 import com.example.vaideboa.Dtos.ViagemRealizadaDTO;
 import com.example.vaideboa.model.Carona;
+import com.example.vaideboa.model.Carro;
 import com.example.vaideboa.model.PontoParada;
 import com.example.vaideboa.model.Reserva;
 import com.example.vaideboa.model.Rota;
@@ -43,6 +46,7 @@ import jakarta.transaction.Transactional;
 @Service
 public class CaronaService {
     private final CaronaRepository caronaRepository;
+    private final CarroRepository carroRepository;
     private final RotaRepository rotaRepository;
     private final UserRepository userRepository; 
     private final RotaService rotaService;
@@ -54,11 +58,12 @@ public class CaronaService {
     private final CompartilhamentoService compartilhamentoService;
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
-    public CaronaService(CaronaRepository caronaRepository, RotaRepository rotaRepository,
+    public CaronaService(CaronaRepository caronaRepository, CarroRepository carroRepository, RotaRepository rotaRepository,
         UserRepository userRepository, RotaService rotaService, AvaliacaoService avaliacaoService,
         GeoService geoService, CodigoService codigoService, PontoParadaRepository pontoParadaRepository,
         AvaliacaoRepository avaliacaoRepository, CompartilhamentoService compartilhamentoService) {
       this.caronaRepository = caronaRepository;
+      this.carroRepository = carroRepository;
       this.rotaRepository = rotaRepository;
       this.userRepository = userRepository;
       this.rotaService = rotaService;
@@ -77,6 +82,13 @@ public class CaronaService {
         return false;
       }
       User user = userOpt.get();
+      Carro carro = carroRepository.findById(caronaDto.getIdCarro()).orElse(null);
+      if (carro == null || !Boolean.TRUE.equals(carro.getAtivo()) || !carro.getDono().getId().equals(user.getId())) {
+        return false;
+      }
+      if (caronaDto.getQntAssentos() > carro.getVagas()) {
+        return false;
+      }
       Rota rota = new Rota();
       Carona carona = new Carona();
       Point saida = geometryFactory.createPoint(
@@ -137,6 +149,7 @@ public class CaronaService {
       carona.setQntAssentos(caronaDto.getQntAssentos());
       carona.setVagasDisponiveis(caronaDto.getQntAssentos());
       carona.setMotorista(user);
+      carona.setCarro(carro);
       carona.setData(caronaDto.getData());
       carona.setHora(caronaDto.getHora());
       // calcular a recomendacao de preco
@@ -160,6 +173,13 @@ public class CaronaService {
       if(!carona.getMotorista().getId().equals(user.getId())){
         return new ApiResponse(false,"Usuário não tem acesso a essa carona");
       }
+      if (StatusCarona.EM_ANDAMENTO.equals(carona.getStatusCarona())) {
+        compartilhamentoService.iniciarCompartilhamento(idCarona);
+        return new ApiResponse(true, "Carona já está em andamento");
+      }
+      if (!StatusCarona.EM_ESPERA.equals(carona.getStatusCarona())) {
+        return new ApiResponse(false, "Carona não pode ser iniciada no estado atual");
+      }
       if(!carona.getData().equals(LocalDate.now())){
         return new ApiResponse(false,"Carona fora da data agendada");
       }
@@ -173,7 +193,7 @@ public class CaronaService {
       }
       if(agora.isAfter(horaSuperior)){
         return new ApiResponse(false,"Não é mais possível iniciar a carona. O horário limite foi excedido.");
-      } 
+      }
       carona.setStatusCarona(StatusCarona.EM_ANDAMENTO);
       ApiResponse retorno = codigoService.gerarCodigos(carona.getReservas());
       if(!retorno.isRetorno()){
@@ -202,6 +222,7 @@ public class CaronaService {
         return new ApiResponse(false,"Usuário não tem acesso a carona pois não é o motorista", null);
       }
       carona.setRealizado(true);
+      carona.setStatusCarona(StatusCarona.CONCLUIDA);
       boolean sucesso = avaliacaoService.criarAvaliacoes(carona);
       if(!sucesso){
           return new ApiResponse(false, "Erro ao criar avaliações", null);
@@ -340,6 +361,7 @@ public class CaronaService {
       dto.setQntAssentos(carona.getQntAssentos());
       dto.setVagasDisponiveis(carona.getVagasDisponiveis());
       dto.setRealizado(carona.isRealizado());
+      dto.setStatusCarona(carona.getStatusCarona());
       dto.setLatSaida(carona.getRota().getSaida().getY());
       dto.setLonSaida(carona.getRota().getSaida().getX());
       dto.setSaidaTexto(carona.getRota().getSaidaTexto());
@@ -349,7 +371,12 @@ public class CaronaService {
       dto.setDistancia(carona.getRota().getDistancia());
       dto.setDuracao(carona.getRota().getDuracao());
       dto.setNome(carona.getMotorista().getNome());
+      dto.setIdMotorista(carona.getMotorista().getId());
+      dto.setFotoMotorista(carona.getMotorista().getFoto());
       dto.setGenero(carona.getMotorista().getGenero().getDescricao());
+      if (carona.getCarro() != null) {
+        dto.setCarro(CarroRetornoDto.from(carona.getCarro(), !carona.getMotorista().getId().equals(user.getId())));
+      }
       dto.setIdRota(carona.getRota().getId());
       List<PontoParadaRetornoDto> paradasDto = new ArrayList<PontoParadaRetornoDto>();
       for (PontoParada parada : carona.getRota().getRota_points()) {
