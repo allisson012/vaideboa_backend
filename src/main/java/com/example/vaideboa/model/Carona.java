@@ -61,4 +61,5 @@ public class Carona {
    @JoinColumn(name = "trajeto_compartilhado_id")
    @JsonIgnore
    private TrajetoCompartilhado trajetoCompartilhado;
+   private LocalDateTime concluidaEm;
 }

@@ -59,4 +59,6 @@ public class Reserva {
     @JsonIgnore
     @OneToMany(mappedBy = "reserva", cascade = CascadeType.ALL)
     private List<ReservaEvento> eventos;
+    @OneToOne(mappedBy = "reserva")
+    private Chat chat;
 }

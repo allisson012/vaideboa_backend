@@ -16,6 +16,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.vaideboa.model.Avaliacao;
 import com.example.vaideboa.model.Carona;
@@ -24,6 +25,7 @@ import com.example.vaideboa.model.PontoParada;
 import com.example.vaideboa.model.Reserva;
 import com.example.vaideboa.model.User;
 import com.example.vaideboa.model.enums.StatusPedido;
+import com.example.vaideboa.model.enums.StatusReserva;
 import com.example.vaideboa.model.enums.TipoAvaliacao;
 import com.example.vaideboa.repository.AvaliacaoRepository;
 import com.example.vaideboa.repository.CaronaRepository;
@@ -38,16 +40,20 @@ public class PedidoService {
     private final CaronaRepository caronaRepository;
     private final PedidoCaronaRepository pedidoCaronaRepository;
     private final AvaliacaoRepository avaliacaoRepository;
+    private final ChatService chatService;
     private final GeometryFactory geometryFactory = new GeometryFactory();
     
-    public PedidoService(UserRepository userRepository, CaronaRepository caronaRepository,
-            PedidoCaronaRepository pedidoCaronaRepository, ReservaRepository reservaRepository,
-            AvaliacaoRepository avaliacaoRepository) {
+
+
+    public PedidoService(ReservaRepository reservaRepository, UserRepository userRepository,
+            CaronaRepository caronaRepository, PedidoCaronaRepository pedidoCaronaRepository,
+            AvaliacaoRepository avaliacaoRepository, ChatService chatService) {
+        this.reservaRepository = reservaRepository;
         this.userRepository = userRepository;
         this.caronaRepository = caronaRepository;
         this.pedidoCaronaRepository = pedidoCaronaRepository;
-        this.reservaRepository = reservaRepository;
         this.avaliacaoRepository = avaliacaoRepository;
+        this.chatService = chatService;
     }
 
     public ApiResponse agendarCarona(AgendarCaronaDto agendarCaronaDto , String username){
@@ -90,6 +96,7 @@ public class PedidoService {
       return new ApiResponse(true, "Pedido agendado com sucesso");
     }
 
+    @Transactional 
     public ApiResponse aceitarPedidoCarona(Long id, String username){
       Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
       if(userOpt.isEmpty()){
@@ -117,9 +124,11 @@ public class PedidoService {
       reserva.setDestino(pedidoCarona.getDestino());
       reserva.setCarona(pedidoCarona.getCarona());
       reserva.setPassageiro(pedidoCarona.getPassageiro());
+      reserva.setStatusReserva(StatusReserva.ACEITA);
       reserva.setAprovado(true); // como ainda não tem pagamento estou deixando ele aprovado
       carona.setVagasDisponiveis(carona.getVagasDisponiveis() - 1);
       // tenho que tirar um na vagas disponiveis da Carona
+      chatService.iniciarChat(reserva);
       reservaRepository.save(reserva);
       pedidoCaronaRepository.save(pedidoCarona);
       return new ApiResponse(true, "Pedido aceito com sucesso");
