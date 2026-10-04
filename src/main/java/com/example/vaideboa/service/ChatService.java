@@ -3,10 +3,18 @@ package com.example.vaideboa.service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.MensagemDto;
+import com.example.vaideboa.Dtos.MensagemRetornoDto;
+import com.example.vaideboa.Dtos.MensagensPaginaDto;
+import com.example.vaideboa.event.MensagemCriadaEvent;
 import com.example.vaideboa.model.Chat;
 import com.example.vaideboa.model.Mensagem;
 import com.example.vaideboa.model.Reserva;
@@ -24,15 +32,18 @@ public class ChatService {
     private final UserRepository userRepository;
     private final ReservaRepository reservaRepository;
     private final MensagemRepository mensagemRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
 
 
     public ChatService(ChatRepository chatRepository, UserRepository userRepository,
-            ReservaRepository reservaRepository, MensagemRepository mensagemRepository) {
+            ReservaRepository reservaRepository, MensagemRepository mensagemRepository,
+            ApplicationEventPublisher eventPublisher) {
         this.chatRepository = chatRepository;
         this.userRepository = userRepository;
         this.reservaRepository = reservaRepository;
         this.mensagemRepository = mensagemRepository;
+        this.eventPublisher = eventPublisher;
     }
     public ApiResponse iniciarChat(Long idReserva, String username){
         return null;
@@ -43,6 +54,7 @@ public class ChatService {
         chat.setReserva(reserva);
         chatRepository.save(chat);
     }
+    @Transactional
     public ApiResponse enviarMensagem(String username, MensagemDto mensagemDto){
         Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
         if(userOpt.isEmpty()){
@@ -54,7 +66,7 @@ public class ChatService {
             return new ApiResponse(false, "Reserva não encontrada");
         }
         Reserva reserva = reservaOpt.get();
-        if(!reserva.getPassageiro().getId().equals(user.getId()) && !reserva.getCarona().getMotorista().getId().equals(user.getId())){
+        if(!participaDaReserva(user, reserva)){
             return new ApiResponse(false, "Usuário não faz parte dessa reserva");
         }
 
@@ -82,15 +94,49 @@ public class ChatService {
         mensagem.setChat(chat);
         mensagem.setEnviadoEm(agora);
         mensagem.setMensagem(mensagemDto.getMensagem());
-        mensagemRepository.save(mensagem);
-        return new ApiResponse(true, "Mensagem enviada com sucesso");
+        Mensagem salva = mensagemRepository.save(mensagem);
+        MensagemRetornoDto retorno = MensagemRetornoDto.from(salva);
+        eventPublisher.publishEvent(new MensagemCriadaEvent(retorno));
+        return new ApiResponse(true, "Mensagem enviada com sucesso", retorno);
     }
 
-    public void conectarChat(){
-
+    @Transactional(readOnly = true)
+    public boolean podeAcessarChat(String username, Long idReserva) {
+        Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
+        Optional<Reserva> reservaOpt = reservaRepository.findById(idReserva);
+        if (userOpt.isEmpty() || reservaOpt.isEmpty()) {
+            return false;
+        }
+        Reserva reserva = reservaOpt.get();
+        return participaDaReserva(userOpt.get(), reserva) && chatRepository.findByReserva(reserva).isPresent();
     }
 
-    public void buscarMensagens(){
-        
+    @Transactional(readOnly = true)
+    public MensagensPaginaDto buscarMensagens(String username, Long idReserva, int page, int size) {
+        if (idReserva == null || idReserva <= 0 || page < 0 || size < 1 || size > 100) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Informe uma reserva positiva, page maior ou igual a zero e size entre 1 e 100");
+        }
+        User user = userRepository.findByUsernameAndAtivoTrue(username)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "Usuário não encontrado ou inativo"));
+        Reserva reserva = reservaRepository.findById(idReserva)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Reserva não encontrada"));
+        if (!participaDaReserva(user, reserva)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Usuário não faz parte dessa reserva");
+        }
+        Chat chat = chatRepository.findByReserva(reserva)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Chat não encontrado"));
+
+        return MensagensPaginaDto.from(mensagemRepository
+                .findByChatOrderByEnviadoEmDescIdDesc(chat, PageRequest.of(page, size))
+                .map(MensagemRetornoDto::from));
+    }
+
+    private boolean participaDaReserva(User user, Reserva reserva) {
+        return reserva.getPassageiro().getId().equals(user.getId()) || reserva.getCarona().getMotorista().getId().equals(user.getId());
     }
 }

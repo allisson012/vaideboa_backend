@@ -128,8 +128,8 @@ public class PedidoService {
       reserva.setAprovado(true); // como ainda não tem pagamento estou deixando ele aprovado
       carona.setVagasDisponiveis(carona.getVagasDisponiveis() - 1);
       // tenho que tirar um na vagas disponiveis da Carona
-      chatService.iniciarChat(reserva);
       reservaRepository.save(reserva);
+      chatService.iniciarChat(reserva);
       pedidoCaronaRepository.save(pedidoCarona);
       return new ApiResponse(true, "Pedido aceito com sucesso");
     }

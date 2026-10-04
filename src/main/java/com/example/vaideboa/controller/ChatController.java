@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.MensagemDto;
+import com.example.vaideboa.Dtos.MensagensPaginaDto;
 import com.example.vaideboa.service.ChatService;
 
 import jakarta.validation.Valid;
@@ -37,6 +39,11 @@ public class ChatController {
         if(!response.isRetorno()){
             return ResponseEntity.badRequest().body(response.getMensagem());
         }
-        return ResponseEntity.ok(response.getMensagem());
+        return ResponseEntity.ok(response.getDados());
+    }
+
+    @GetMapping("/{idReserva}/mensagens")
+    public ResponseEntity<MensagensPaginaDto> buscarMensagens(@PathVariable Long idReserva, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "30") int size, Authentication auth) {
+        return ResponseEntity.ok(chatService.buscarMensagens(auth.getName(), idReserva, page, size));
     }
 }
