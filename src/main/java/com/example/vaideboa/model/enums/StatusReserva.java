@@ -2,6 +2,7 @@ package com.example.vaideboa.model.enums;
 
 public enum StatusReserva {
     PENDENTE("Pendente"),
+    ACEITA("Aceita"),
     EMBARQUE_LIBERADO("Embarque Liberado"),
     EMBARCADO("Embarcado"),
     CONCLUIDA_USUARIO("Concluida pelo usuario"),

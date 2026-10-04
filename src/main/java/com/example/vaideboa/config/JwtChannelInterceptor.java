@@ -21,6 +21,7 @@ import com.example.vaideboa.model.User;
 import com.example.vaideboa.repository.CaronaRepository;
 import com.example.vaideboa.repository.ReservaRepository;
 import com.example.vaideboa.repository.UserRepository;
+import com.example.vaideboa.service.ChatService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,6 +33,7 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
     private final CaronaRepository caronaRepository;
     private final UserRepository userRepository;
     private final ReservaRepository reservaRepository;
+    private final ChatService chatService;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -74,6 +76,7 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
             validarInscricao(accessor);
         }
         if (StompCommand.SEND.equals(accessor.getCommand())) {
+            validarPublicacao(accessor);
             validarSolicitacaoTrajeto(accessor);
         }
 
@@ -82,13 +85,52 @@ public class JwtChannelInterceptor implements ChannelInterceptor {
 
     private void validarInscricao(StompHeaderAccessor accessor) {
         String destino = accessor.getDestination();
-        if (destino == null || !destino.startsWith("/topic/carona/")) {
+        if (destino == null || destino.contains("*") || destino.contains("{")) {
+            throw new MessageDeliveryException("Destino de inscrição inválido");
+        }
+        if (destino.startsWith("/topic/chat/")) {
+            validarInscricaoChat(accessor);
+            return;
+        }
+        // Impede inscrições genéricas que também poderiam receber mensagens de chats.
+        if (destino.startsWith("/topic") && !destino.startsWith("/topic/carona/")) {
+            throw new MessageDeliveryException("Destino de inscrição não permitido");
+        }
+        if (!destino.startsWith("/topic/carona/")) {
             return;
         }
 
         Authentication authentication = (Authentication) accessor.getUser();
         if (authentication == null || !podeAcompanhar(authentication.getName(), extrairIdCarona(destino))) {
             throw new MessageDeliveryException("Usuário não pode acompanhar esta carona");
+        }
+    }
+
+    private void validarInscricaoChat(StompHeaderAccessor accessor) {
+        String id = accessor.getDestination().substring("/topic/chat/".length());
+        if (!id.matches("[1-9][0-9]*")) {
+            throw new MessageDeliveryException("Destino de chat inválido");
+        }
+        Long idReserva;
+        try {
+            idReserva = Long.valueOf(id);
+        } catch (NumberFormatException exception) {
+            throw new MessageDeliveryException("Destino de chat inválido");
+        }
+        Authentication authentication = (Authentication) accessor.getUser();
+        if (authentication == null || !authentication.isAuthenticated()
+                || !chatService.podeAcessarChat(authentication.getName(), idReserva)) {
+            throw new MessageDeliveryException("Usuário não pode acessar este chat");
+        }
+    }
+
+    private void validarPublicacao(StompHeaderAccessor accessor) {
+        String destino = accessor.getDestination();
+        if (destino == null || !destino.startsWith("/app/")) {
+            throw new MessageDeliveryException("Publicações devem ser enviadas para a aplicação");
+        }
+        if (accessor.getUser() == null) {
+            throw new MessageDeliveryException("Usuário não autenticado");
         }
     }
 

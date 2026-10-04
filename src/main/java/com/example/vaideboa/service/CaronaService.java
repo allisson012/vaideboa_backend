@@ -7,6 +7,7 @@ import com.example.vaideboa.repository.RotaRepository;
 import com.example.vaideboa.repository.AvaliacaoRepository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -223,6 +224,7 @@ public class CaronaService {
       }
       carona.setRealizado(true);
       carona.setStatusCarona(StatusCarona.CONCLUIDA);
+      carona.setConcluidaEm(LocalDateTime.now());
       boolean sucesso = avaliacaoService.criarAvaliacoes(carona);
       if(!sucesso){
           return new ApiResponse(false, "Erro ao criar avaliações", null);

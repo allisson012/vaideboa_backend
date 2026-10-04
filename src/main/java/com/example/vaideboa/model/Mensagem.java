@@ -2,11 +2,12 @@ package com.example.vaideboa.model;
 
 
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -25,13 +26,15 @@ public class Mensagem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "autor_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "autor_id", nullable = false)
     private User autor;
+    @Column(nullable = false, length = 1000)
     private String mensagem;
-    private Timestamp enviadoEm;
+    @Column(nullable = false)
+    private LocalDateTime enviadoEm;
     @JsonIgnore
-    @ManyToOne()
-    @JoinColumn(name = "chat_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "chat_id", nullable = false)
     private Chat chat;
 }
