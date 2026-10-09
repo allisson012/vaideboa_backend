@@ -2,7 +2,9 @@ package com.example.vaideboa.service;
 
 import com.example.vaideboa.repository.CaronaRepository;
 import com.example.vaideboa.repository.CarroRepository;
+import com.example.vaideboa.repository.PedidoCaronaRepository;
 import com.example.vaideboa.repository.PontoParadaRepository;
+import com.example.vaideboa.repository.ReservaRepository;
 import com.example.vaideboa.repository.RotaRepository;
 import com.example.vaideboa.repository.AvaliacaoRepository;
 
@@ -33,12 +35,15 @@ import com.example.vaideboa.Dtos.RotaInfoDto;
 import com.example.vaideboa.Dtos.ViagemRealizadaDTO;
 import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.Carro;
+import com.example.vaideboa.model.PedidoCarona;
 import com.example.vaideboa.model.PontoParada;
 import com.example.vaideboa.model.Reserva;
 import com.example.vaideboa.model.Rota;
 import com.example.vaideboa.model.User;
 import com.example.vaideboa.model.Avaliacao;
 import com.example.vaideboa.model.enums.StatusCarona;
+import com.example.vaideboa.model.enums.StatusPedido;
+import com.example.vaideboa.model.enums.StatusReserva;
 import com.example.vaideboa.model.enums.TipoAvaliacao;
 import com.example.vaideboa.repository.UserRepository;
 
@@ -46,6 +51,8 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class CaronaService {
+    private final ReservaRepository reservaRepository;
+    private final PedidoCaronaRepository pedidoCaronaRepository;
     private final CaronaRepository caronaRepository;
     private final CarroRepository carroRepository;
     private final RotaRepository rotaRepository;
@@ -57,23 +64,29 @@ public class CaronaService {
     private final PontoParadaRepository pontoParadaRepository;
     private final AvaliacaoRepository avaliacaoRepository;
     private final CompartilhamentoService compartilhamentoService;
+    private final NotificacoesService notificacoesService;
     private final GeometryFactory geometryFactory = new GeometryFactory();
 
-    public CaronaService(CaronaRepository caronaRepository, CarroRepository carroRepository, RotaRepository rotaRepository,
-        UserRepository userRepository, RotaService rotaService, AvaliacaoService avaliacaoService,
-        GeoService geoService, CodigoService codigoService, PontoParadaRepository pontoParadaRepository,
-        AvaliacaoRepository avaliacaoRepository, CompartilhamentoService compartilhamentoService) {
-      this.caronaRepository = caronaRepository;
-      this.carroRepository = carroRepository;
-      this.rotaRepository = rotaRepository;
-      this.userRepository = userRepository;
-      this.rotaService = rotaService;
-      this.avaliacaoService = avaliacaoService;
-      this.geoService = geoService;
-      this.codigoService = codigoService;
-      this.pontoParadaRepository = pontoParadaRepository;
-      this.avaliacaoRepository = avaliacaoRepository;
-      this.compartilhamentoService = compartilhamentoService;
+    public CaronaService(ReservaRepository reservaRepository, PedidoCaronaRepository pedidoCaronaRepository,
+            CaronaRepository caronaRepository, CarroRepository carroRepository, RotaRepository rotaRepository,
+            UserRepository userRepository, RotaService rotaService, AvaliacaoService avaliacaoService,
+            GeoService geoService, CodigoService codigoService, PontoParadaRepository pontoParadaRepository,
+            AvaliacaoRepository avaliacaoRepository, CompartilhamentoService compartilhamentoService,
+            NotificacoesService notificacoesService) {
+        this.reservaRepository = reservaRepository;
+        this.pedidoCaronaRepository = pedidoCaronaRepository;
+        this.caronaRepository = caronaRepository;
+        this.carroRepository = carroRepository;
+        this.rotaRepository = rotaRepository;
+        this.userRepository = userRepository;
+        this.rotaService = rotaService;
+        this.avaliacaoService = avaliacaoService;
+        this.geoService = geoService;
+        this.codigoService = codigoService;
+        this.pontoParadaRepository = pontoParadaRepository;
+        this.avaliacaoRepository = avaliacaoRepository;
+        this.compartilhamentoService = compartilhamentoService;
+        this.notificacoesService = notificacoesService;
     }
 
     @Transactional
@@ -392,6 +405,54 @@ public class CaronaService {
       dto.setParadas(paradasDto);
 
       return new ApiResponse(true, "Busca feita com sucesso", dto);
+    }
+
+    @Transactional 
+    public ApiResponse cancelarCarona(String username, Long idCarona){
+      Optional<Carona> caronaOpt = caronaRepository.findById(idCarona);
+      Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
+      if(caronaOpt.isEmpty()){
+        return new ApiResponse(false, "Carona não encontrada");
+      }
+      if(userOpt.isEmpty()){
+        return new ApiResponse(false, "Usuário não encontrado");
+      }
+      Carona carona = caronaOpt.get();
+      User user = userOpt.get();
+      if(!carona.getMotorista().getId().equals(user.getId())){
+        return new ApiResponse(false,"Somente o motorista da carona pode cancelar");
+      }
+      if(carona.getStatusCarona() == StatusCarona.CANCELADA){
+        return new ApiResponse(false, "Carona já foi cancelada");  
+      }
+      if(carona.getStatusCarona() == StatusCarona.CONCLUIDA){
+        return new ApiResponse(false, "Não é possivel cancelar uma carona já finalizada");  
+      }
+      if(carona.getStatusCarona() == StatusCarona.EM_ANDAMENTO){
+        return new ApiResponse(false, "Não é possivel cancelar uma carona em andamento");  
+      }
+      carona.setStatusCarona(StatusCarona.CANCELADA);
+      List<PedidoCarona> pedidosCarona = pedidoCaronaRepository.findByCaronaId(carona.getId());
+      if(!pedidosCarona.isEmpty()){
+        for (PedidoCarona pedidoCarona : pedidosCarona) {
+          if(pedidoCarona.getStatus() == StatusPedido.PENDENTE){
+            pedidoCarona.setStatus(StatusPedido.CANCELADO);
+            pedidoCaronaRepository.save(pedidoCarona);
+            notificacoesService.enviarNotificacaoCancelamentoCarona(pedidoCarona.getPassageiro(), carona);
+          }
+        }
+      }
+      if(!carona.getReservas().isEmpty()){
+        for (Reserva reserva : carona.getReservas()) {
+          if(reserva.getStatusReserva() == StatusReserva.ACEITA){
+            reserva.setStatusReserva(StatusReserva.CANCELADA);
+            reservaRepository.save(reserva);
+            notificacoesService.enviarNotificacaoCancelamentoCarona(reserva.getPassageiro(), carona);
+          }
+        }
+      }
+      caronaRepository.save(carona);
+      return new ApiResponse(true, "Carona cancelada com sucesso");
     }
 
 }

@@ -24,6 +24,6 @@ public class EmailService {
         email.setText(mensagem);
 
         mailSender.send(email);
-        return null;
+        return new ApiResponse(true,"Email enviado com sucesso");
     }
 }

@@ -57,13 +57,13 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
     ST_DWithin(
         r.trajeto::geography,
         ST_SetSRID(:saida, 4326)::geography,
-        500
+        2000
     )
     AND
     ST_DWithin(
         r.trajeto::geography,
         ST_SetSRID(:destino, 4326)::geography,
-        500
+        2000
     )
     AND
     ST_LineLocatePoint(

@@ -19,11 +19,12 @@ public class RecomendacaoPrecoService {
 
         double consumoPadrao = 10.0; 
         double precoGasolina = 6.00; 
-        carro.getVagas();
+        
         double consumo = consumoPadrao;
 
         if (carro != null && carro.getConsumo() != null) {
             consumo = carro.getConsumo();
+            carro.getVagas();
         }
 
         double litrosNecessarios = distancia / consumo;
