@@ -32,7 +32,7 @@ public class ReservaCodigo {
     private boolean embarqueLiberado = false; // para o sistema saber se ele ja liberou o codigo
     private boolean embarqueRealizado = false; // para quando o passageiro colocar o codigo
 
-    private String codigoDesembarque; // um numero de quatro digitos
+    private String codigoDesembarque; // um numero de quatro digitos -> não esta sendo usado
     private boolean desembarqueLiberado = false;
     private boolean desembarqueRealizado = false;
 

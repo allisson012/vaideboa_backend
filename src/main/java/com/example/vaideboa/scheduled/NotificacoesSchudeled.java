@@ -10,18 +10,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.Reserva;
+import com.example.vaideboa.model.enums.StatusCarona;
+import com.example.vaideboa.model.enums.StatusReserva;
 import com.example.vaideboa.repository.CaronaRepository;
+import com.example.vaideboa.repository.ReservaRepository;
 import com.example.vaideboa.service.NotificacoesService;
 
 @Component
 public class NotificacoesSchudeled {
 
     private final CaronaRepository caronaRepository;
+    private final ReservaRepository reservaRepository;
     private final NotificacoesService notificacoesService;
     
 
-    public NotificacoesSchudeled(CaronaRepository caronaRepository, NotificacoesService notificacoesService) {
+    public NotificacoesSchudeled(CaronaRepository caronaRepository, ReservaRepository reservaRepository,
+            NotificacoesService notificacoesService) {
         this.caronaRepository = caronaRepository;
+        this.reservaRepository = reservaRepository;
         this.notificacoesService = notificacoesService;
 }
 
@@ -34,10 +40,11 @@ public class NotificacoesSchudeled {
         LocalTime horaEm1h = horaAgora.plusHours(1);
 
         List<Carona> caronas =
-                caronaRepository.findByDataAndHoraBetweenAndNotificado1hFalse(
+                caronaRepository.findByDataAndHoraBetweenAndNotificado1hFalseAndStatusCarona(
                         data,
                         horaAgora,
-                        horaEm1h);
+                        horaEm1h,
+                        StatusCarona.EM_ESPERA);
 
         for (Carona carona : caronas) {
 
@@ -47,7 +54,7 @@ public class NotificacoesSchudeled {
                     carona
             );
 
-            for (Reserva reserva : carona.getReservas()) {
+            for (Reserva reserva : reservaRepository.findByCaronaAndStatusReserva(carona, StatusReserva.ACEITA)) {
 
                 notificarUsuario(
                         reserva.getPassageiro().getNome(),
