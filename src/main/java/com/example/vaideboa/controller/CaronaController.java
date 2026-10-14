@@ -69,9 +69,19 @@ public class CaronaController {
     }
 
     @GetMapping("/iniciar/{idCarona}")
-    public ResponseEntity<?> iniciarCarona( @PathVariable Long idCarona, Authentication auth){
+    public ResponseEntity<?> iniciarCarona(@PathVariable Long idCarona, Authentication auth){
         String username = auth.getName();
         ApiResponse resposta = caronaService.iniciarCarona(idCarona, username);
+        if(!resposta.isRetorno()){
+            return ResponseEntity.badRequest().body(resposta.getMensagem());
+        }
+        return ResponseEntity.ok(resposta.getMensagem());
+    }
+
+    @GetMapping("/cancelar/{idCarona}")
+    public ResponseEntity<?> cancelarCarona(@PathVariable Long idCarona, Authentication auth){
+        String username = auth.getName();
+        ApiResponse resposta = caronaService.cancelarCarona(username, idCarona);
         if(!resposta.isRetorno()){
             return ResponseEntity.badRequest().body(resposta.getMensagem());
         }

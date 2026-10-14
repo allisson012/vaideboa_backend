@@ -16,6 +16,7 @@ import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.PontoParada;
 import com.example.vaideboa.model.Rota;
 import com.example.vaideboa.model.User;
+import com.example.vaideboa.model.enums.StatusCarona;
 
 @Repository
 public interface CaronaRepository extends JpaRepository<Carona,Long>{
@@ -44,7 +45,8 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
     );
 
 
-    List<Carona> findByMotoristaAndDataGreaterThanEqual(User motorista, LocalDate data);
+    List<Carona> findByMotoristaAndDataGreaterThanEqualAndStatusCarona(
+        User motorista, LocalDate data, StatusCarona statusCarona);
 
 
 
@@ -57,13 +59,13 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
     ST_DWithin(
         r.trajeto::geography,
         ST_SetSRID(:saida, 4326)::geography,
-        500
+        2000
     )
     AND
     ST_DWithin(
         r.trajeto::geography,
         ST_SetSRID(:destino, 4326)::geography,
-        500
+        2000
     )
     AND
     ST_LineLocatePoint(
@@ -77,6 +79,8 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
     )
 
     AND c.data = :data
+    AND c.status_carona = 'EM_ESPERA'
+    AND c.vagas_disponiveis > 0
     """, nativeQuery = true)
     List<Carona> buscarCaronasTodoTrajeto(
         @Param("saida") Point saida,
@@ -84,10 +88,11 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
         @Param("data") LocalDate data
     );
 
-    List<Carona> findByDataAndHoraBetweenAndNotificado1hFalse(
+    List<Carona> findByDataAndHoraBetweenAndNotificado1hFalseAndStatusCarona(
     LocalDate data,
     LocalTime inicio,
-    LocalTime fim
+    LocalTime fim,
+    StatusCarona statusCarona
     );
 
     // segunda query ela deve verificar os pontos de paradas para não misturar a logica
@@ -122,6 +127,8 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
         )
 
     AND c.data = :data
+    AND c.status_carona = 'EM_ESPERA'
+    AND c.vagas_disponiveis > 0
     """, nativeQuery = true)
     List<Carona> buscarCaronasPorParadas(
         @Param("saida") Point saida,

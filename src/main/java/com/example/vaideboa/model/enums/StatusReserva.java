@@ -7,6 +7,7 @@ public enum StatusReserva {
     EMBARCADO("Embarcado"),
     CONCLUIDA_USUARIO("Concluida pelo usuario"),
     CONCLUIDA_SISTEMA("Concluida pelo sistema"),
+    CANCELADA("Cancelada pelo motorista"),
     NAO_COMPARECEU("Não compareceu");
 
     private final String descricao;

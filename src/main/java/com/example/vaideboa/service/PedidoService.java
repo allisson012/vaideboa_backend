@@ -26,6 +26,7 @@ import com.example.vaideboa.model.Reserva;
 import com.example.vaideboa.model.User;
 import com.example.vaideboa.model.enums.StatusPedido;
 import com.example.vaideboa.model.enums.StatusReserva;
+import com.example.vaideboa.model.enums.StatusCarona;
 import com.example.vaideboa.model.enums.TipoAvaliacao;
 import com.example.vaideboa.repository.AvaliacaoRepository;
 import com.example.vaideboa.repository.CaronaRepository;
@@ -141,7 +142,8 @@ public class PedidoService {
       }
       User user = userOpt.get();
       LocalDate data = LocalDate.now(); // data de hoje 
-      List<Carona> caronas = caronaRepository.findByMotoristaAndDataGreaterThanEqual(user,data);
+      List<Carona> caronas = caronaRepository.findByMotoristaAndDataGreaterThanEqualAndStatusCarona(
+          user, data, StatusCarona.EM_ESPERA);
       List<PedidoCarona> pedidosCarona = new ArrayList<>();
       for (Carona carona : caronas) {
         List<PedidoCarona> pedidos = pedidoCaronaRepository.findByCaronaAndStatus(carona, StatusPedido.PENDENTE);

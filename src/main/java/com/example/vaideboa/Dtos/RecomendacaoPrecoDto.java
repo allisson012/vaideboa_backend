@@ -8,26 +8,21 @@ public class RecomendacaoPrecoDto {
     private Double litrosNecessarios;
     private Double custoCombustivel;
     private Integer quantidadePessoas;
+    private Double precoTotal;
     private Double precoPorPessoa;
 
     public RecomendacaoPrecoDto() {
     }
 
-    public RecomendacaoPrecoDto(
-            Double distancia,
-            Double consumo,
-            Double precoGasolina,
-            Double litrosNecessarios,
-            Double custoCombustivel,
-            Integer quantidadePessoas,
-            Double precoPorPessoa
-    ) {
+    public RecomendacaoPrecoDto(Double distancia, Double consumo, Double precoGasolina, Double litrosNecessarios,
+            Double custoCombustivel, Integer quantidadePessoas, Double precoTotal, Double precoPorPessoa) {
         this.distancia = distancia;
         this.consumo = consumo;
         this.precoGasolina = precoGasolina;
         this.litrosNecessarios = litrosNecessarios;
         this.custoCombustivel = custoCombustivel;
         this.quantidadePessoas = quantidadePessoas;
+        this.precoTotal = precoTotal;
         this.precoPorPessoa = precoPorPessoa;
     }
 
@@ -86,4 +81,13 @@ public class RecomendacaoPrecoDto {
     public void setPrecoPorPessoa(Double precoPorPessoa) {
         this.precoPorPessoa = precoPorPessoa;
     }
+
+    public Double getPrecoTotal() {
+        return precoTotal;
+    }
+
+    public void setPrecoTotal(Double precoTotal) {
+        this.precoTotal = precoTotal;
+    }
+    
 }
