@@ -285,7 +285,9 @@ public class CaronaService {
                   c.getRota().getDestinoTexto(),
                   null,
                   null,
-                  converterParadas(c.getRota().getRota_points())
+                  converterParadas(c.getRota().getRota_points()),
+                  null,
+                  null
           ));
           idsAdicionados.add(c.getId());
       }
@@ -317,7 +319,9 @@ public class CaronaService {
                   c.getRota().getDestinoTexto(),
                   null,
                   null,
-                  converterParadas(c.getRota().getRota_points())
+                  converterParadas(c.getRota().getRota_points()),
+                  null,
+                  null
           );
           dto.setIdReserva(r.getId());
           Optional<Avaliacao> avaliacaoOpt = avaliacaoRepository.findByReservaAndAvaliadoAndAvaliador(
@@ -327,6 +331,39 @@ public class CaronaService {
           }
           resultado.add(dto);
           idsAdicionados.add(c.getId());
+      }
+      if (!filtro.equals("REALIZADAS")) {
+          List<PedidoCarona> pedidosPendentes = pedidoCaronaRepository
+                  .findByPassageiroAndStatus(user, StatusPedido.PENDENTE);
+
+          for (PedidoCarona pedido : pedidosPendentes) {
+              Carona c = pedido.getCarona();
+              if (c == null || c.getRota() == null || c.isRealizado()
+                      || idsAdicionados.contains(c.getId())) continue;
+
+              Point origem = c.getRota().getSaida();
+              Point destino = c.getRota().getDestino();
+
+              resultado.add(new ViagemRealizadaDTO(
+                      c.getId(),
+                      origem.getY(),
+                      origem.getX(),
+                      destino.getY(),
+                      destino.getX(),
+                      c.getData(),
+                      c.getHora(),
+                      "PASSAGEIRO",
+                      false,
+                      c.getRota().getSaidaTexto(),
+                      c.getRota().getDestinoTexto(),
+                      null,
+                      null,
+                      converterParadas(c.getRota().getRota_points()),
+                      pedido.getId(),
+                      pedido.getStatus()
+              ));
+              idsAdicionados.add(c.getId());
+          }
       }
       resultado.sort(Comparator
               .comparing(ViagemRealizadaDTO::getData)

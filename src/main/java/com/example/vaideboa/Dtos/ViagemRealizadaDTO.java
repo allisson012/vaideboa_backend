@@ -3,6 +3,7 @@ package com.example.vaideboa.Dtos;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import com.example.vaideboa.model.enums.StatusPedido;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,5 +27,7 @@ public class ViagemRealizadaDTO {
     private Long idReserva;
     private Long idAvaliacao;
     private List<PontoParadaRetornoDto> paradas;
+    private Long idPedidoCarona;
+    private StatusPedido statusPedido;
 
 }
