@@ -17,5 +17,7 @@ public interface PedidoCaronaRepository extends JpaRepository<PedidoCarona,Long>
 
     List<PedidoCarona> findByCaronaAndStatus(Carona carona, StatusPedido status);
 
+    List<PedidoCarona> findByPassageiroAndStatus(User passageiro, StatusPedido status);
+
     List<PedidoCarona> findByCaronaId(Long idCarona);
 }
