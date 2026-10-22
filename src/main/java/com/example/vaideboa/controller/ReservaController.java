@@ -3,12 +3,18 @@ package com.example.vaideboa.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.vaideboa.Dtos.BuscaCaronaDto;
+import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.BuscaRetornaDto;
 import com.example.vaideboa.service.ReservaService;
 
@@ -29,5 +35,15 @@ public class ReservaController {
             return ResponseEntity.badRequest().body("Nenhuma carona encontrada");
         }
         return ResponseEntity.ok(buscasRetornoDto);
+    }
+
+    @GetMapping("/cancelar/{idReserva}")
+    public ResponseEntity<?> cancelarReserva(@PathVariable Long idReserva, Authentication auth){
+        String username = auth.getName();
+        ApiResponse response = reservaService.cancelarReserva(username, idReserva);
+        if(!response.isRetorno()){
+            return ResponseEntity.badRequest().body(response.getMensagem());
+        }
+        return ResponseEntity.ok(response.getMensagem());
     }
 }
