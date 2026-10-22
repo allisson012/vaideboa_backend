@@ -172,6 +172,7 @@ public class CaronaService {
       return true;
     }
 
+    @Transactional
     public ApiResponse iniciarCarona(Long idCarona, String username){
       User user = userRepository.findByUsernameAndAtivoTrue(username)
       .orElse(null);
@@ -180,7 +181,7 @@ public class CaronaService {
           return new ApiResponse(false, "Usuário não encontrado");
       }
 
-      Carona carona = caronaRepository.findById(idCarona).orElse(null);
+      Carona carona = caronaRepository.buscarPorIdComBloqueio(idCarona).orElse(null);
       if(carona == null){
         return new ApiResponse(false,"Carona não encontrada");
       }
@@ -208,11 +209,11 @@ public class CaronaService {
       if(agora.isAfter(horaSuperior)){
         return new ApiResponse(false,"Não é mais possível iniciar a carona. O horário limite foi excedido.");
       }
-      carona.setStatusCarona(StatusCarona.EM_ANDAMENTO);
       ApiResponse retorno = codigoService.gerarCodigos(carona.getReservas());
       if(!retorno.isRetorno()){
         return retorno;
       }
+      carona.setStatusCarona(StatusCarona.EM_ANDAMENTO);
       caronaRepository.save(carona);
       compartilhamentoService.iniciarCompartilhamento(idCarona);
       return new ApiResponse(true, "Carona iniciada com sucesso");
@@ -482,7 +483,7 @@ public class CaronaService {
       if(!carona.getReservas().isEmpty()){
         for (Reserva reserva : carona.getReservas()) {
           if(reserva.getStatusReserva() == StatusReserva.ACEITA){
-            reserva.setStatusReserva(StatusReserva.CANCELADA);
+            reserva.setStatusReserva(StatusReserva.CANCELADA); // podia colocar um status cancelada pelo motorista
             reservaRepository.save(reserva);
             notificacoesService.enviarNotificacaoCancelamentoCarona(reserva.getPassageiro(), carona);
           }
