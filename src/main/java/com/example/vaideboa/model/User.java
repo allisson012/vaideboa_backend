@@ -71,4 +71,10 @@ public class User {
     @JsonIgnore
     @OneToMany(mappedBy = "user")
     private List<RecuperarSenha> minhasRecuperacoes;
+    @JsonIgnore
+    @OneToMany(mappedBy = "user")
+    private List<Casa> minhasCasas;
+    @JsonIgnore
+    @OneToMany(mappedBy = "user")
+    private List<Faculdade> minhasFaculdades;
 }
