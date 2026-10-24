@@ -4,9 +4,9 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.RecuperarSenhaDto;
@@ -34,35 +34,44 @@ public class RecuperacaoSenhaService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional
     public ApiResponse enviarEmailRecuperacao(String email){
         Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(email);
         if(userOpt.isEmpty()){
-            // para evitar expor se existe esse email no sistema
             return new ApiResponse(true,"Se existir uma conta vinculada a este e-mail, um código de recuperação será enviado."); 
         }
-        User user = userOpt.get();
+        User user = recuperarSenhaRepository.bloquearUsuario(userOpt.get().getId()).orElseThrow();
+        if (!user.isAtivo()) {
+            return new ApiResponse(true, "Se existir uma conta vinculada a este e-mail, um código de recuperação será enviado.");
+        }
 
         Optional<RecuperarSenha> recuperarSenhaOpt = recuperarSenhaRepository.findByUser(user);
         RecuperarSenha recuperarSenha;
-        // criar uma de historico pq aqui eu sobrescrevo perco a informação de quantas vezes pediu etc
-        // então posso criar uma tabela que salve os registro para ter um historico de se o usuario esta 
-        // abusando da funcionalidade 
         if (recuperarSenhaOpt.isPresent()) {
             recuperarSenha = recuperarSenhaOpt.get();
         } else {
             recuperarSenha = new RecuperarSenha();
             recuperarSenha.setUser(user);
         }
+        LocalDateTime agora = LocalDateTime.now();
+        if (recuperarSenha.getBloqueadoAte() != null && recuperarSenha.getBloqueadoAte().isAfter(agora)) {
+            return new ApiResponse(true, "Se existir uma conta vinculada a este e-mail, um código de recuperação será enviado.");
+        }
+        if (!Boolean.TRUE.equals(recuperarSenha.getUtilizado()) && !Boolean.TRUE.equals(recuperarSenha.getBloqueado()) && recuperarSenha.getExpiresAt() != null && recuperarSenha.getExpiresAt().isAfter(agora)) {
+            return new ApiResponse(true, "Se existir uma conta vinculada a este e-mail, um código de recuperação será enviado.");
+        }
         SecureRandom random = new SecureRandom();
         // gera um codigo de 6 digitos
         String codigo = String.format("%06d", random.nextInt(1000000));
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        String codigoHash = encoder.encode(codigo);
+        String codigoHash = passwordEncoder.encode(codigo);
 
-        // transformar em hash esse codigo ta faltando
         recuperarSenha.setUser(user);
         recuperarSenha.setTokenHash(codigoHash);
-        recuperarSenha.setExpiresAt(LocalDateTime.now().plusMinutes(15));
+        recuperarSenha.setExpiresAt(agora.plusMinutes(15));
+        recuperarSenha.setTentativasFalhas(0);
+        recuperarSenha.setBloqueado(false);
+        recuperarSenha.setBloqueadoAte(null);
+        recuperarSenha.setUtilizado(false);
         
         String assunto = "🔐 Recuperação de senha - VaiDeBoa";
 
@@ -96,53 +105,79 @@ public class RecuperacaoSenhaService {
       
     }
 
+    @Transactional
     public ApiResponse validarCodigo(String codigo, String email){
         Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(email);
         if(userOpt.isEmpty()){
             return new ApiResponse(false,"Código inválido.");
         }
-        User user = userOpt.get();
+        User user = recuperarSenhaRepository.bloquearUsuario(userOpt.get().getId()).orElseThrow();
+        if (!user.isAtivo()) {
+            return new ApiResponse(false, "Código inválido.");
+        }
         Optional<RecuperarSenha> recuperarSenhaOpt = recuperarSenhaRepository.findByUser(user);
         if(recuperarSenhaOpt.isEmpty()){
             return new ApiResponse(false,"Solicitação de recuperação não encontrada.");
         }
         RecuperarSenha recuperarSenha = recuperarSenhaOpt.get();
-        if(recuperarSenha.getUtilizado()){
+        if(Boolean.TRUE.equals(recuperarSenha.getUtilizado())){
             return new ApiResponse(false,"Este código já foi utilizado. Solicite um novo código.");
         }
         LocalDateTime agora = LocalDateTime.now();
-        if(!recuperarSenha.getExpiresAt().isAfter(agora)){
+        if (recuperarSenha.getBloqueadoAte() != null && recuperarSenha.getBloqueadoAte().isAfter(agora)) {
+            return new ApiResponse(false, "Limite de tentativas atingido. Aguarde o fim do bloqueio para solicitar um novo código.");
+        }
+        if (Boolean.TRUE.equals(recuperarSenha.getBloqueado()) || recuperarSenha.getTentativasFalhas() >= 6) {
+            return new ApiResponse(false, "Este código foi bloqueado. Solicite um novo código.");
+        }
+        if(recuperarSenha.getExpiresAt() == null || !recuperarSenha.getExpiresAt().isAfter(agora)){
             return new ApiResponse(false,"O código de recuperação expirou. Solicite um novo código.");
         }
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        if (!encoder.matches(codigo, recuperarSenha.getTokenHash())) {
+        if (codigo == null || !codigo.matches("[0-9]{6}") || !passwordEncoder.matches(codigo, recuperarSenha.getTokenHash())) { 
+            recuperarSenha.setTentativasFalhas(recuperarSenha.getTentativasFalhas() + 1);
+            if (recuperarSenha.getTentativasFalhas() >= 6) {
+                recuperarSenha.setBloqueadoAte(agora.plusMinutes(15));
+                recuperarSenha.setBloqueado(true);
+            }
+            recuperarSenhaRepository.save(recuperarSenha);
+            if (Boolean.TRUE.equals(recuperarSenha.getBloqueado())) {
+                return new ApiResponse(false, "Limite de tentativas atingido. Aguarde 15 minutos para solicitar um novo código.");
+            }
             return new ApiResponse(false, "Código inválido.");
         }
         String tokenReset = jwtService.generatePasswordResetToken(recuperarSenha);
         return new ApiResponse(true,"Codigo validado com sucesso",tokenReset);
     }
 
+    @Transactional
     public ApiResponse alterarSenha(RecuperarSenhaDto dto){
         boolean valido = jwtService.isPasswordResetToken(dto.getTokenReset());
         if(!valido){
             return new ApiResponse(false,"Não foi possível validar a solicitação de recuperação de senha.");
         }
         Long id = jwtService.getRecoveryId(dto.getTokenReset());
+        String email = jwtService.getEmail(dto.getTokenReset());
+        Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(email);
+        if (userOpt.isEmpty()) {
+            return new ApiResponse(false, "Não foi possível validar a solicitação de recuperação de senha.");
+        }
+        User user = recuperarSenhaRepository.bloquearUsuario(userOpt.get().getId()).orElseThrow();
         Optional<RecuperarSenha> recuperarSenhaOpt = recuperarSenhaRepository.findById(id);
         if(recuperarSenhaOpt.isEmpty()){
             return new ApiResponse(false,"Não foi possível validar a solicitação de recuperação de senha.");
         }
         RecuperarSenha recuperarSenha = recuperarSenhaOpt.get();
-        String email = jwtService.getEmail(dto.getTokenReset());
-        User user = recuperarSenha.getUser();
-        if(!email.equals(user.getUsername())){
+        if (!user.isAtivo() || !recuperarSenha.getUser().getId().equals(user.getId())) {
             return new ApiResponse(false, "Não foi possível validar a solicitação de recuperação de senha.");
         }
-        if(recuperarSenha.getUtilizado()){
+        if(Boolean.TRUE.equals(recuperarSenha.getUtilizado())){
             return new ApiResponse(false, "Esta solicitação de recuperação já foi utilizada.");
         }
         LocalDateTime agora = LocalDateTime.now();
-        if(!recuperarSenha.getExpiresAt().isAfter(agora)){
+        if (Boolean.TRUE.equals(recuperarSenha.getBloqueado()) || recuperarSenha.getTentativasFalhas() >= 6 || (recuperarSenha.getBloqueadoAte() != null && recuperarSenha.getBloqueadoAte().isAfter(agora))) {
+            return new ApiResponse(false, "Esta solicitação foi bloqueada. Solicite um novo código após o fim do bloqueio.");
+        }
+        if(recuperarSenha.getExpiresAt() == null || !recuperarSenha.getExpiresAt().isAfter(agora)){
             return new ApiResponse(false,"O código de recuperação expirou. Solicite um novo código.");
         }
         if(!SenhaValidator.senhaValida(dto.getSenha()))

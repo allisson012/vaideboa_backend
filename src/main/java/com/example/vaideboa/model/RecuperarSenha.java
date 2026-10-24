@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.annotation.Generated;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -30,5 +29,9 @@ public class RecuperarSenha {
     private User user;
     private LocalDateTime expiresAt;
     private Boolean utilizado = false;
-    // quantidade de vezes que pode enviar
+    private int tentativasFalhas = 0;
+    // Impede o reenvio até este horário; nulo significa ausência de bloqueio temporário.
+    private LocalDateTime bloqueadoAte;
+    // Invalida o código atual, inclusive depois do fim do bloqueio temporário.
+    private Boolean bloqueado = false;
 }
