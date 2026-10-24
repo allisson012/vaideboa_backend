@@ -1,5 +1,6 @@
 package com.example.vaideboa.security;
 
+import org.springframework.http.HttpMethod;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
@@ -50,6 +51,7 @@ public class SecurityConfig {
                 .requestMatchers("/recuperarSenha/**").permitAll()
                 .requestMatchers("/oauth2/**", "/login/**").permitAll()
                 .requestMatchers("/validarToken","/ws/**","/ws").permitAll()
+                .requestMatchers(HttpMethod.GET, "/compartilhamento/publico/*").permitAll()
                 .anyRequest().authenticated())
             .oauth2ResourceServer(
                 conf -> conf.jwt(Customizer.withDefaults()))
