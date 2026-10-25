@@ -57,13 +57,14 @@ public class PedidoService {
         this.chatService = chatService;
     }
 
+    @Transactional 
     public ApiResponse agendarCarona(AgendarCaronaDto agendarCaronaDto , String username){
       Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
       if(userOpt.isEmpty()){
         return new ApiResponse(false, "Usuário não encontrado");
       }
       User user = userOpt.get();
-      Optional<Carona> caronaOpt = caronaRepository.findById(agendarCaronaDto.getIdCarona());
+      Optional<Carona> caronaOpt = caronaRepository.buscarPorIdComBloqueio(agendarCaronaDto.getIdCarona());
       if(caronaOpt.isEmpty()){
         return new ApiResponse(false, "Carona não encontrada");
       }
@@ -74,6 +75,9 @@ public class PedidoService {
       }
       if(pedidoCaronaRepository.existsByPassageiroAndCarona(user, carona)){
         return new ApiResponse(false, "Pedido já existe");
+      }
+      if(carona.getStatusCarona() != StatusCarona.EM_ESPERA){
+        return new ApiResponse(false,"Só é possivel agendar carona que estejam em espera");
       }
       if(carona.getVagasDisponiveis() == 0){
         return new ApiResponse(false, "Carona lotada");
@@ -104,22 +108,33 @@ public class PedidoService {
         return new ApiResponse(false, "Usuário não encontrado ou inativo");
       }
       User user = userOpt.get();
-      Optional<PedidoCarona> pedidoCaronaOpt = pedidoCaronaRepository.findById(id);
+      Optional<Long> idCarona = pedidoCaronaRepository.buscarIdCarona(id);
+      if(idCarona.isEmpty()){
+        return new ApiResponse(false, "Pedido de carona não encontrado");
+      }
+      Optional<Carona> caronaOpt = caronaRepository.buscarPorIdComBloqueio(idCarona.get());
+      if(caronaOpt.isEmpty()){
+        return new ApiResponse(false, "Carona não encontrada");
+      }
+      Carona carona = caronaOpt.get();
+      Optional<PedidoCarona> pedidoCaronaOpt = pedidoCaronaRepository.buscarPorIdComBloqueio(id);
       if(pedidoCaronaOpt.isEmpty()){
         return new ApiResponse(false, "Pedido de carona não encontrado");
       }
       PedidoCarona pedidoCarona = pedidoCaronaOpt.get();
-      if(!pedidoCarona.getCarona().getMotorista().equals(user)){
+      if(!carona.getMotorista().getId().equals(user.getId())){
         return new ApiResponse(false, "Apenas o motorista da carona pode aceitar pedidos");
+      }
+      if(carona.getStatusCarona() != StatusCarona.EM_ESPERA){
+        return new ApiResponse(false, "Só é possível aceitar pedidos com a carona em espera");
       }
       if(pedidoCarona.getStatus() != StatusPedido.PENDENTE){
         return new ApiResponse(false, "Pedido não pode mais ser alterado");
       }
-      if(pedidoCarona.getCarona().getVagasDisponiveis() == 0){
+      if(carona.getVagasDisponiveis() <= 0){
         return new ApiResponse(false, "Veiculo não tem vagas disponiveis");
       }
       pedidoCarona.setStatus(StatusPedido.ACEITO);
-      Carona carona = pedidoCarona.getCarona();
       Reserva reserva = new Reserva();
       reserva.setSaida(pedidoCarona.getSaida());
       reserva.setDestino(pedidoCarona.getDestino());
@@ -142,8 +157,7 @@ public class PedidoService {
       }
       User user = userOpt.get();
       LocalDate data = LocalDate.now(); // data de hoje 
-      List<Carona> caronas = caronaRepository.findByMotoristaAndDataGreaterThanEqualAndStatusCarona(
-          user, data, StatusCarona.EM_ESPERA);
+      List<Carona> caronas = caronaRepository.findByMotoristaAndDataGreaterThanEqualAndStatusCarona(user, data, StatusCarona.EM_ESPERA);
       List<PedidoCarona> pedidosCarona = new ArrayList<>();
       for (Carona carona : caronas) {
         List<PedidoCarona> pedidos = pedidoCaronaRepository.findByCaronaAndStatus(carona, StatusPedido.PENDENTE);
@@ -256,15 +270,24 @@ public class PedidoService {
       return new ApiResponse(true, "Pedidos buscados com sucesso", dtos);
     }
 
+    @Transactional 
     public ApiResponse recusarPedido(String username, Long id){
       Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
       if(userOpt.isEmpty()){
         return new ApiResponse(false,"Usuário não encontrado");
       }
       User user = userOpt.get();
-      Optional<PedidoCarona> pedidoCaronaOpt = pedidoCaronaRepository.findById(id);
+      Optional<Long> idCarona = pedidoCaronaRepository.buscarIdCarona(id);
+      if(idCarona.isEmpty()){
+        return new ApiResponse(false, "Pedido de carona não encontrado");
+      }
+      Optional<Carona> caronaOpt = caronaRepository.buscarPorIdComBloqueio(idCarona.get());
+      if(caronaOpt.isEmpty()){
+        return new ApiResponse(false, "Carona não encontrada");
+      }
+      Optional<PedidoCarona> pedidoCaronaOpt = pedidoCaronaRepository.buscarPorIdComBloqueio(id);
       if(pedidoCaronaOpt.isEmpty()){
-        return new ApiResponse(false,"Pedido de Carona não encontrado");
+        return new ApiResponse(false, "Pedido de carona não encontrado");
       }
       PedidoCarona pedidoCarona = pedidoCaronaOpt.get();
       if(!pedidoCarona.getCarona().getMotorista().equals(user)){
@@ -272,6 +295,12 @@ public class PedidoService {
       }
       if (pedidoCarona.getStatus() == StatusPedido.RECUSADO) {
         return new ApiResponse(false,"Este pedido já foi recusado.");
+      }
+      if (pedidoCarona.getStatus() == StatusPedido.CANCELADO) {
+        return new ApiResponse(false,"Este pedido já foi cancelado.");
+      }
+      if (pedidoCarona.getStatus() == StatusPedido.ACEITO){
+        return new ApiResponse(false,"Este pedido já foi aceito só é possivel cancelar a reserva agora.");
       }
       pedidoCarona.setStatus(StatusPedido.RECUSADO);
       pedidoCaronaRepository.save(pedidoCarona);

@@ -122,7 +122,7 @@ public class CodigoService {
             return new ApiResponse(false,"Usuário não encontrado");
         }
         User user = userOpt.get();
-        Optional<Carona> caronaOpt = caronaRepository.findById(dto.getIdCarona());
+        Optional<Carona> caronaOpt = caronaRepository.buscarPorIdComBloqueio(dto.getIdCarona());
         if(caronaOpt.isEmpty()){
             return new ApiResponse(false, "Carona não encontrada");
         }

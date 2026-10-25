@@ -24,6 +24,7 @@ import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.CaronaDto;
@@ -47,7 +48,6 @@ import com.example.vaideboa.model.enums.StatusReserva;
 import com.example.vaideboa.model.enums.TipoAvaliacao;
 import com.example.vaideboa.repository.UserRepository;
 
-import jakarta.transaction.Transactional;
 
 @Service
 public class CaronaService {
@@ -89,7 +89,7 @@ public class CaronaService {
         this.notificacoesService = notificacoesService;
     }
 
-    @Transactional
+    @Transactional 
     public boolean cadastrarCarona(CaronaDto caronaDto , String username){
       Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
       if(userOpt.isEmpty()){
@@ -188,11 +188,11 @@ public class CaronaService {
       if(!carona.getMotorista().getId().equals(user.getId())){
         return new ApiResponse(false,"Usuário não tem acesso a essa carona");
       }
-      if (StatusCarona.EM_ANDAMENTO.equals(carona.getStatusCarona())) {
+      if(StatusCarona.EM_ANDAMENTO.equals(carona.getStatusCarona())) {
         compartilhamentoService.iniciarCompartilhamento(idCarona);
         return new ApiResponse(true, "Carona já está em andamento");
       }
-      if (!StatusCarona.EM_ESPERA.equals(carona.getStatusCarona())) {
+      if(!StatusCarona.EM_ESPERA.equals(carona.getStatusCarona())) {
         return new ApiResponse(false, "Carona não pode ser iniciada no estado atual");
       }
       if(!carona.getData().equals(LocalDate.now())){
@@ -219,17 +219,21 @@ public class CaronaService {
       return new ApiResponse(true, "Carona iniciada com sucesso");
     }
 
+    @Transactional 
     public ApiResponse finalizarCorrida(Long idCarona, String username){
       Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
       if(userOpt.isEmpty()){
         return new ApiResponse(false, "Usuário não encontrado", null);
       }
-      Optional<Carona> caronaOpt = caronaRepository.findById(idCarona);
+      Optional<Carona> caronaOpt = caronaRepository.buscarPorIdComBloqueio(idCarona);
       if(caronaOpt.isEmpty()){
         return new ApiResponse(false, "Carona não encontrada", null);
       }
       Carona carona = caronaOpt.get();
       User user = userOpt.get();
+      if(carona.getStatusCarona() != StatusCarona.EM_ANDAMENTO){
+        return new ApiResponse(false,"Só é possivel finalizar uma carona em andamento");  
+      }
       if(carona.isRealizado()){
         return new ApiResponse(false, "Carona já realizada", null);
       }
@@ -447,7 +451,7 @@ public class CaronaService {
 
     @Transactional 
     public ApiResponse cancelarCarona(String username, Long idCarona){
-      Optional<Carona> caronaOpt = caronaRepository.findById(idCarona);
+      Optional<Carona> caronaOpt = caronaRepository.buscarPorIdComBloqueio(idCarona);
       Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
       if(caronaOpt.isEmpty()){
         return new ApiResponse(false, "Carona não encontrada");
