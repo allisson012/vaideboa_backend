@@ -103,6 +103,10 @@ public class CaronaService {
       if (caronaDto.getQntAssentos() > carro.getVagas()) {
         return false;
       }
+      Double precoTotal = caronaDto.getPrecoTotal();
+      if (precoTotal == null || !Double.isFinite(precoTotal) || precoTotal < 0) {
+        return false;
+      }
       Rota rota = new Rota();
       Carona carona = new Carona();
       Point saida = geometryFactory.createPoint(
@@ -166,7 +170,8 @@ public class CaronaService {
       carona.setCarro(carro);
       carona.setData(caronaDto.getData());
       carona.setHora(caronaDto.getHora());
-      // calcular a recomendacao de preco
+      carona.setPrecoTotal(precoTotal);
+      carona.setPrecoPessoa(precoTotal / (caronaDto.getQntAssentos() + 1.0));
       carona.setRota(rotaSalva);
       caronaRepository.save(carona);
       return true;

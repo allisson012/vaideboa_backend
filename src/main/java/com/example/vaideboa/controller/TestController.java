@@ -49,6 +49,6 @@ public class TestController {
 
     @GetMapping("/recomendacao")
     public void testarRecomendação(){
-        recomendacaoPrecoService.recomendacaoPreco(63.22,4,null,1L);
+        //recomendacaoPrecoService.recomendacaoPreco(63.22,4,null,1L);
     }
 }

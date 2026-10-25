@@ -18,10 +18,13 @@ public class CaronaDto {
     private final double saidaLng;
     private final double destinoLat;
     private final double destinoLng;
+    private final Double precoTotal;
     private final List<ParadaDto> paradas;
 
-    public CaronaDto(int qntAssentos, Long idCarro, LocalDate data, LocalTime hora, double saidaLat, double saidaLng,
-            double destinoLat, double destinoLng, List<ParadaDto> paradas) {
+    public CaronaDto(@Min(value = 1, message = "Mínimo de 1 vaga") int qntAssentos,
+            @NotNull(message = "Veículo é obrigatório") Long idCarro, LocalDate data, LocalTime hora, double saidaLat,
+            double saidaLng, double destinoLat, double destinoLng, Double precoTotal,
+            List<ParadaDto> paradas) {
         this.qntAssentos = qntAssentos;
         this.idCarro = idCarro;
         this.data = data;
@@ -30,9 +33,10 @@ public class CaronaDto {
         this.saidaLng = saidaLng;
         this.destinoLat = destinoLat;
         this.destinoLng = destinoLng;
+        this.precoTotal = precoTotal;
         this.paradas = paradas;
     }
-    
+
     public int getQntAssentos() {
         return qntAssentos;
     }
@@ -60,5 +64,11 @@ public class CaronaDto {
 
     public List<ParadaDto> getParadas() {
         return paradas;
-    }    
+    }
+
+    public Double getPrecoTotal() {
+        return precoTotal;
+    }
+
+
 }
