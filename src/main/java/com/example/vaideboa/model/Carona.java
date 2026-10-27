@@ -62,4 +62,6 @@ public class Carona {
    @JsonIgnore
    private TrajetoCompartilhado trajetoCompartilhado;
    private LocalDateTime concluidaEm;
+   private Double precoTotal;
+   private Double precoPessoa;
 }

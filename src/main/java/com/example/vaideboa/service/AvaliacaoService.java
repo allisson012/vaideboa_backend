@@ -40,7 +40,7 @@ private final ReservaRepository reservaRepository;
         
         List<Reserva> reservas = carona.getReservas();
         if(reservas == null || reservas.isEmpty()){
-            return false;
+            return true;
         }
 
         for (Reserva reserva : reservas) {
@@ -100,7 +100,7 @@ private final ReservaRepository reservaRepository;
             }
           }
         }
-        // pega do usuario
+        
         if(isPassageiro){
           for (Avaliacao avaliacao : avaliacoes) {
             if(avaliacao.getTipo() == TipoAvaliacao.PASSAGEIRO_AVALIA_MOTORISTA){

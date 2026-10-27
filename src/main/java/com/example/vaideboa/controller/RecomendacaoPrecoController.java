@@ -4,9 +4,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.vaideboa.Dtos.RecomendacaoPrecoDto;
+import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.service.RecomendacaoPrecoService;
 
 @RestController 
@@ -19,9 +20,11 @@ public class RecomendacaoPrecoController {
     }
 
     @GetMapping("/buscar")
-    public ResponseEntity<?> recomendacaoPreco(RecomendacaoPrecoDto recomendacaoDto, Authentication auth){
-        recomendacaoPrecoService.recomendacaoPreco(recomendacaoDto.getDistancia(),recomendacaoDto.getQuantidadePessoas(),null,1L);
-
-        return null;
+    public ResponseEntity<?> recomendacaoPreco(@RequestParam("distancia") Double distancia,@RequestParam("quantidadePessoas") Integer quantidadePessoas, @RequestParam("idCarro") Long idCarro, Authentication auth) {
+        ApiResponse resposta = recomendacaoPrecoService.recomendacaoPreco(distancia, quantidadePessoas, idCarro, auth.getName());
+        if (!resposta.isRetorno()) {
+            return ResponseEntity.badRequest().body(resposta.getMensagem());
+        }
+        return ResponseEntity.ok(resposta.getDados());
     }
 }

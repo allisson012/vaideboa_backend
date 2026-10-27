@@ -1,6 +1,8 @@
 package com.example.vaideboa.service;
 
 import java.time.LocalDateTime;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,11 +33,18 @@ import lombok.extern.slf4j.Slf4j;
 public class CompartilhamentoService {
 
     private final SimpMessagingTemplate messagingTemplate;
+    private final CompartilhamentoExternoService compartilhamentoExternoService;
+    private final Clock clock;
     private final Map<Long, List<Coordinate>> trajetosEmAndamento = new ConcurrentHashMap<>();
     private final CaronaRepository caronaRepository;
     private final TrajetoCompartilhadoRepository trajetoCompartilhadoRepository;
     
     public void atualizarLocalizacao(Long idCarona, double latitude, double longitude, String username) {
+        Instant recebidaEm = clock.instant();
+        if (!CompartilhamentoExternoService.coordenadasValidas(latitude, longitude)) {
+            log.warn("Localização ignorada: coordenadas inválidas para a carona {}", idCarona);
+            return;
+        }
         Optional<Carona> caronaOpt = caronaRepository.findById(idCarona);
         if (caronaOpt.isEmpty()) {
             log.warn("Localização ignorada: carona {} não encontrada. Motorista: {}", idCarona, username);
@@ -60,7 +69,11 @@ public class CompartilhamentoService {
             return;
         }
 
-        log.info("Atualizando localização da carona {}: latitude={}, longitude={}", idCarona, latitude, longitude);
+        try {
+            compartilhamentoExternoService.atualizarLocalizacao(idCarona, latitude, longitude, recebidaEm);
+        } catch (RuntimeException ex) {
+            log.error("Falha ao atualizar posição pública da carona {}: {}", idCarona, ex.getClass().getSimpleName());
+        }
         LocalizacaoDto localizacao = new LocalizacaoDto(latitude, longitude);
         messagingTemplate.convertAndSend("/topic/carona/" + idCarona, localizacao);
 
@@ -114,7 +127,6 @@ public class CompartilhamentoService {
         trajetoCompartilhado.setStatusCompartilhamento(StatusCompartilhamento.CANCELADO);
         trajetoCompartilhado.setFim(LocalDateTime.now());
         trajetoCompartilhadoRepository.save(trajetoCompartilhado);
-        // estou perdendo os pontos do caminho feito ate o momento pensar se quero salvar ou não
         trajetosEmAndamento.remove(idCarona);
     }
 
@@ -124,8 +136,7 @@ public class CompartilhamentoService {
             return;
         }
         Carona carona = caronaOpt.get();
-        List<Coordinate> trajeto = trajetosEmAndamento.computeIfAbsent(idCarona,
-                ignored -> restaurarTrajeto(carona));
+        List<Coordinate> trajeto = trajetosEmAndamento.computeIfAbsent(idCarona, ignored -> restaurarTrajeto(carona));
         log.info("Finalizando compartilhamento da carona {} com {} pontos", idCarona, trajeto == null ? 0 : trajeto.size());
         Optional<TrajetoCompartilhado> trajetoCompartilhadoOpt = trajetoCompartilhadoRepository.findByCarona(carona);
         if(trajetoCompartilhadoOpt.isEmpty()){
@@ -181,16 +192,15 @@ public class CompartilhamentoService {
         if (caronaOpt.isEmpty()) {
             return List.of();
         }
-        return restaurarTrajeto(caronaOpt.get()).stream()
-                .map(coordenada -> new LocalizacaoDto(coordenada.getY(), coordenada.getX()))
-                .toList();
+        List<Coordinate> trajeto = restaurarTrajeto(caronaOpt.get());
+        if (trajeto == null) {
+            return List.of();
+        }
+        return trajeto.stream().map(coordenada -> new LocalizacaoDto(coordenada.getY(), coordenada.getX())).toList();
     }
 
     private List<Coordinate> restaurarTrajeto(Carona carona) {
-        return trajetoCompartilhadoRepository.findByCarona(carona)
-                .filter(trajeto -> StatusCompartilhamento.EM_ANDAMENTO.equals(trajeto.getStatusCompartilhamento()))
-                .map(this::restaurarTrajeto)
-                .orElse(null);
+        return trajetoCompartilhadoRepository.findByCarona(carona).filter(trajeto -> StatusCompartilhamento.EM_ANDAMENTO.equals(trajeto.getStatusCompartilhamento())).map(this::restaurarTrajeto).orElse(null);
     }
 
     private List<Coordinate> restaurarTrajeto(TrajetoCompartilhado trajetoCompartilhado) {
