@@ -297,6 +297,8 @@ public class CaronaService {
                   null,
                   converterParadas(c.getRota().getRota_points()),
                   null,
+                  null,
+                  c.getStatusCarona(),
                   null
           ));
           idsAdicionados.add(c.getId());
@@ -331,7 +333,9 @@ public class CaronaService {
                   null,
                   converterParadas(c.getRota().getRota_points()),
                   null,
-                  null
+                  null,
+                  c.getStatusCarona(),
+                  r.getStatusReserva()
           );
           dto.setIdReserva(r.getId());
           Optional<Avaliacao> avaliacaoOpt = avaliacaoRepository.findByReservaAndAvaliadoAndAvaliador(
@@ -370,7 +374,9 @@ public class CaronaService {
                       null,
                       converterParadas(c.getRota().getRota_points()),
                       pedido.getId(),
-                      pedido.getStatus()
+                      pedido.getStatus(),
+                      c.getStatusCarona(),
+                      null
               ));
               idsAdicionados.add(c.getId());
           }

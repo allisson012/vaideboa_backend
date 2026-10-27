@@ -1,6 +1,7 @@
 package com.example.vaideboa.Dtos;
 
 import java.util.List;
+import com.example.vaideboa.model.enums.StatusReserva;
 
 import org.locationtech.jts.geom.Point;
 import org.springframework.cglib.core.Local;
@@ -29,6 +30,7 @@ public class PedidoCaronaRetornoDto {
     private Double distancia;
     private Double duracao;
     private String statusPedido;
+    private StatusReserva statusReserva;
     private List<PontoParadaRetornoDto> paradas;
     private Long idAvaliacao;
     private Long idReserva;
@@ -44,6 +46,12 @@ public class PedidoCaronaRetornoDto {
     }
     public void setStatusPedido(String statusPedido) {
         this.statusPedido = statusPedido;
+    }
+    public StatusReserva getStatusReserva() {
+        return statusReserva;
+    }
+    public void setStatusReserva(StatusReserva statusReserva) {
+        this.statusReserva = statusReserva;
     }
     // carro
     public PedidoCaronaRetornoDto() {
