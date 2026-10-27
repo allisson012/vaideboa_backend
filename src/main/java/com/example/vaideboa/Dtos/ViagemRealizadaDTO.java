@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import com.example.vaideboa.model.enums.StatusPedido;
+import com.example.vaideboa.model.enums.StatusCarona;
+import com.example.vaideboa.model.enums.StatusReserva;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,5 +31,7 @@ public class ViagemRealizadaDTO {
     private List<PontoParadaRetornoDto> paradas;
     private Long idPedidoCarona;
     private StatusPedido statusPedido;
+    private StatusCarona statusCarona;
+    private StatusReserva statusReserva;
 
 }

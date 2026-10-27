@@ -256,6 +256,7 @@ public class PedidoService {
               pedidoCarona.getCarona(), pedidoCarona.getPassageiro());
           if (reservaOpt.isPresent()) {
             dto.setIdReserva(reservaOpt.get().getId());
+            dto.setStatusReserva(reservaOpt.get().getStatusReserva());
             Optional<Avaliacao> avaliacaoOpt = avaliacaoRepository.findByReservaAndAvaliadoAndAvaliador(
                 reservaOpt.get(), pedidoCarona.getPassageiro(), user);
             if (avaliacaoOpt.isPresent()) {
