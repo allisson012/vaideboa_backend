@@ -28,7 +28,6 @@ public class CasaService {
 
     @Transactional
     public ApiResponse cadastrarCasa(String username, CasaDto dto) {
-        // O bloqueio do usuário também protege o primeiro cadastro contra requisições simultâneas.
         Optional<User> userOpt = userRepository.buscarAtivoPorUsernameComBloqueio(username);
         if (userOpt.isEmpty()) {
             return new ApiResponse(false, "Usuário não encontrado ou inativo");
@@ -41,7 +40,6 @@ public class CasaService {
         casa.setUser(user);
         casaRepository.save(casa);
 
-        return new ApiResponse(true, casaOpt.isPresent()
-                ? "Casa atualizada com sucesso!" : "Casa cadastrada com sucesso!");
+        return new ApiResponse(true, casaOpt.isPresent() ? "Casa atualizada com sucesso!" : "Casa cadastrada com sucesso!");
     }
 }

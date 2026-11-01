@@ -28,7 +28,6 @@ public class FaculdadeService {
 
     @Transactional
     public ApiResponse cadastrarFaculdade(String username, FaculdadeDto dto) {
-        // O bloqueio do usuário também protege o primeiro cadastro contra requisições simultâneas.
         Optional<User> userOpt = userRepository.buscarAtivoPorUsernameComBloqueio(username);
         if (userOpt.isEmpty()) {
             return new ApiResponse(false, "Usuário não encontrado ou inativo");
@@ -41,7 +40,6 @@ public class FaculdadeService {
         faculdade.setUser(user);
         faculdadeRepository.save(faculdade);
 
-        return new ApiResponse(true, faculdadeOpt.isPresent()
-                ? "Faculdade atualizada com sucesso!" : "Faculdade cadastrada com sucesso!");
+        return new ApiResponse(true, faculdadeOpt.isPresent() ? "Faculdade atualizada com sucesso!" : "Faculdade cadastrada com sucesso!");
     }
 }
