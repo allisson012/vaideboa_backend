@@ -1,14 +1,18 @@
 package com.example.vaideboa.service;
 
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.vaideboa.Dtos.AlterarSenhaDto;
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.EditarUserDto;
+import com.example.vaideboa.Dtos.LocalRetornoDto;
+import com.example.vaideboa.Dtos.LocaisUsuarioDto;
 import com.example.vaideboa.Dtos.PreferenciasDto;
 import com.example.vaideboa.Dtos.PerfilPublicoDto;
 import com.example.vaideboa.Dtos.RankingDto;
@@ -17,6 +21,8 @@ import com.example.vaideboa.Dtos.UserRetornoDto;
 import com.example.vaideboa.exception.EmailJaCadastradoException;
 import com.example.vaideboa.model.Preferencias;
 import com.example.vaideboa.model.Carona;
+import com.example.vaideboa.model.Casa;
+import com.example.vaideboa.model.Faculdade;
 import com.example.vaideboa.model.User;
 import com.example.vaideboa.model.enums.Generos;
 import com.example.vaideboa.model.enums.NivelPreferencia;
@@ -49,6 +55,28 @@ public class UserService {
         this.avaliacaoService = avaliacaoService;
         this.caronaRepository = caronaRepository;
         this.pedidoCaronaRepository = pedidoCaronaRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public ApiResponse buscarLocais(String username) {
+        Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
+        if (userOpt.isEmpty()) {
+            return new ApiResponse(false, "Usuário não encontrado ou inativo");
+        }
+        User user = userOpt.get();
+        LocalRetornoDto casa = user.getMinhasCasas() == null ? null
+                : user.getMinhasCasas().stream()
+                        .min(Comparator.comparing(Casa::getId))
+                        .map(local -> new LocalRetornoDto(local.getId(), local.getDescricao(),
+                                local.getLocalizacao().getY(), local.getLocalizacao().getX()))
+                        .orElse(null);
+        LocalRetornoDto faculdade = user.getMinhasFaculdades() == null ? null
+                : user.getMinhasFaculdades().stream()
+                        .min(Comparator.comparing(Faculdade::getId))
+                        .map(local -> new LocalRetornoDto(local.getId(), local.getDescrisao(),
+                                local.getLocalizacao().getY(), local.getLocalizacao().getX()))
+                        .orElse(null);
+        return new ApiResponse(true, "Locais consultados com sucesso", new LocaisUsuarioDto(casa, faculdade));
     }
 
     public boolean cadastrarUser(UserDto userDto){
