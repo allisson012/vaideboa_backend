@@ -29,8 +29,8 @@ public class ReservaController {
 
     // para retornar as caronas que casam com o local escolhido pelo passageiro
     @PostMapping("/buscar")
-    public ResponseEntity<?> buscarCaronas(@RequestBody BuscaCaronaDto buscaDto){
-        List<BuscaRetornaDto> buscasRetornoDto = reservaService.buscarCaronas(buscaDto);
+    public ResponseEntity<?> buscarCaronas(@RequestBody BuscaCaronaDto buscaDto, Authentication auth){
+        List<BuscaRetornaDto> buscasRetornoDto = reservaService.buscarCaronas(buscaDto, auth.getName());
         if(buscasRetornoDto.isEmpty()){
             return ResponseEntity.badRequest().body("Nenhuma carona encontrada");
         }

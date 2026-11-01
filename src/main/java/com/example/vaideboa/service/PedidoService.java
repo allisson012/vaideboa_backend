@@ -229,12 +229,12 @@ public class PedidoService {
         dto.setNome(pedidoCarona.getPassageiro().getNome());
         dto.setVagasDisponiveis(pedidoCarona.getCarona().getVagasDisponiveis());
         dto.setIdPedidoCarona(pedidoCarona.getId());
-        dto.setLatSaida(pedidoCarona.getCarona().getRota().getSaida().getY());
-        dto.setLonSaida(pedidoCarona.getCarona().getRota().getSaida().getX());
+        dto.setLatSaida(pedidoCarona.getSaida().getY());
+        dto.setLonSaida(pedidoCarona.getSaida().getX());
         dto.setSaidaTexto(pedidoCarona.getCarona().getRota().getSaidaTexto());
 
-        dto.setLatDestino(pedidoCarona.getCarona().getRota().getDestino().getY());
-        dto.setLonDestino(pedidoCarona.getCarona().getRota().getDestino().getX());
+        dto.setLatDestino(pedidoCarona.getDestino().getY());
+        dto.setLonDestino(pedidoCarona.getDestino().getX());
         dto.setDestinoTexto(pedidoCarona.getCarona().getRota().getDestinoTexto());
         dto.setDuracao(pedidoCarona.getCarona().getRota().getDuracao());
         dto.setIdCarona(pedidoCarona.getCarona().getId());

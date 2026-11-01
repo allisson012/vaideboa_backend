@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,10 +24,13 @@ import com.example.vaideboa.model.RecuperarSenha;
 public class JwtService {
     private final JwtEncoder encoder;
     private final JwtDecoder decoder;
+    private final JwtDecoder passwordResetDecoder;
     
-    public JwtService(JwtEncoder encoder, JwtDecoder decoder) {
+    public JwtService(JwtEncoder encoder, @Qualifier("jwtDecoder") JwtDecoder decoder,
+            @Qualifier("passwordResetJwtDecoder") JwtDecoder passwordResetDecoder) {
         this.encoder = encoder;
         this.decoder = decoder;
+        this.passwordResetDecoder = passwordResetDecoder;
     }
 
     public String generateToken(Authentication authentication){
@@ -41,6 +46,7 @@ public class JwtService {
         .issuedAt(now)
         .expiresAt(now.plusSeconds(expiry))
         .subject(authentication.getName())
+        .claim("type", "ACCESS")
         .claim("scope",scopes)
         .build();
     
@@ -48,16 +54,19 @@ public class JwtService {
     }
 
     public boolean tokenValido(String token) {
-    try {
+        if (token == null || token.isBlank()) {
+            return false;
+        }
+        try {
 
-        Jwt jwt = decoder.decode(token);
+            Jwt jwt = decoder.decode(token);
 
-        return jwt.getExpiresAt() != null &&
-               jwt.getExpiresAt().isAfter(Instant.now());
+            return jwt.getExpiresAt() != null &&
+                jwt.getExpiresAt().isAfter(Instant.now());
 
-    } catch (JwtException e) {
-        return false;
-    }
+        } catch (JwtException e) {
+            return false;
+        }
     
     }
     public Jwt decode(String token) {
@@ -65,22 +74,25 @@ public class JwtService {
     }
     
     public String generatePasswordResetToken(RecuperarSenha recuperarSenha) {
-    Instant now = Instant.now();
-    var claims = JwtClaimsSet.builder()
-            .issuer("vaideboa")
-            .issuedAt(now)
-            .expiresAt(recuperarSenha.getExpiresAt().atZone(ZoneId.systemDefault()).toInstant())
-            .subject(recuperarSenha.getUser().getUsername())
-            .claim("type", "PASSWORD_RESET")
-            .claim("recoveryId", recuperarSenha.getId())
-            .build();
+        Instant now = Instant.now();
+        var claims = JwtClaimsSet.builder()
+                .issuer("vaideboa")
+                .issuedAt(now)
+                .expiresAt(recuperarSenha.getExpiresAt().atZone(ZoneId.systemDefault()).toInstant())
+                .subject(recuperarSenha.getUser().getUsername())
+                .claim("type", "PASSWORD_RESET")
+                .claim("recoveryId", recuperarSenha.getId())
+                .build();
 
-    return encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        return encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
 
     public boolean isPasswordResetToken(String token){
+        if (token == null || token.isBlank()) {
+            return false;
+        }
         try{
-            Jwt jwt = decoder.decode(token);
+            Jwt jwt = passwordResetDecoder.decode(token);
             return "PASSWORD_RESET".equals(jwt.getClaimAsString("type"))
                     && jwt.getExpiresAt().isAfter(Instant.now());
         }catch(JwtException e){
@@ -89,12 +101,12 @@ public class JwtService {
     }
 
     public Long getRecoveryId(String token){
-        Jwt jwt = decoder.decode(token);
+        Jwt jwt = passwordResetDecoder.decode(token);
         return jwt.getClaim("recoveryId");
     }
 
     public String getEmail(String token){
-        Jwt jwt = decoder.decode(token);
+        Jwt jwt = passwordResetDecoder.decode(token);
         return jwt.getSubject();
     }
 }

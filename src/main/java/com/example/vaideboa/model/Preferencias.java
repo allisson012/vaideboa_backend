@@ -32,6 +32,7 @@ public class Preferencias {
     private NivelPreferencia cigarro;
     @Enumerated(EnumType.STRING)
     private NivelPreferencia animais;
+    private Long raioDeslocamentoMetros = 2000L;
     @JsonIgnore
     @OneToOne
     private User user;
