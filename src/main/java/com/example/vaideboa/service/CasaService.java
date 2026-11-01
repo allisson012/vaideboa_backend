@@ -6,6 +6,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.vaideboa.Dtos.ApiResponse;
 import com.example.vaideboa.Dtos.CasaDto;
@@ -25,18 +26,20 @@ public class CasaService {
         this.casaRepository = casaRepository;
     }
 
+    @Transactional
     public ApiResponse cadastrarCasa(String username, CasaDto dto) {
-        Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
+        Optional<User> userOpt = userRepository.buscarAtivoPorUsernameComBloqueio(username);
         if (userOpt.isEmpty()) {
             return new ApiResponse(false, "Usuário não encontrado ou inativo");
         }
         User user = userOpt.get();
-        Casa casa = new Casa();
+        Optional<Casa> casaOpt = casaRepository.findFirstByUserOrderByIdAsc(user);
+        Casa casa = casaOpt.orElseGet(Casa::new);
         casa.setDescricao(dto.getDescricao());
         casa.setLocalizacao(geometryFactory.createPoint(new Coordinate(dto.getLongitude(), dto.getLatitude())));
         casa.setUser(user);
         casaRepository.save(casa);
 
-        return new ApiResponse(true, "Casa cadastrada com sucesso!");
+        return new ApiResponse(true, casaOpt.isPresent() ? "Casa atualizada com sucesso!" : "Casa cadastrada com sucesso!");
     }
 }

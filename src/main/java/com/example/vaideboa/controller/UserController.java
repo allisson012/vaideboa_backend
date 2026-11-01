@@ -47,6 +47,15 @@ public class UserController {
     return ResponseEntity.ok(userService.buscarUserPorUsername(username));
     }
 
+    @GetMapping("/locais")
+    public ResponseEntity<?> buscarLocais(Authentication auth) {
+        ApiResponse resposta = userService.buscarLocais(auth.getName());
+        if (!resposta.isRetorno()) {
+            return ResponseEntity.badRequest().body(resposta.getMensagem());
+        }
+        return ResponseEntity.ok(resposta.getDados());
+    }
+
     @GetMapping("/perfil/{idUsuario}")
     public ResponseEntity<?> buscarPerfilPublico(@org.springframework.web.bind.annotation.PathVariable Long idUsuario,
             @RequestParam Long idCarona, Authentication authentication) {
