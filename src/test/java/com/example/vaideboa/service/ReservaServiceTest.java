@@ -30,7 +30,7 @@ class ReservaServiceTest {
         usuarios = mock(UserRepository.class);
         reservas = mock(ReservaRepository.class);
         caronas = mock(CaronaRepository.class);
-        service = new ReservaService(null, null, caronas, null, usuarios, reservas);
+       // service = new ReservaService(null, null, caronas, null, usuarios, reservas);
         User passageiro = new User();
         passageiro.setId(1L);
         carona = new Carona();

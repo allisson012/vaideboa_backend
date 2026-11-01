@@ -22,6 +22,7 @@ import com.example.vaideboa.Dtos.PontoParadaRetornoDto;
 import com.example.vaideboa.Dtos.RankingDto;
 import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.PontoParada;
+import com.example.vaideboa.model.Preferencias;
 import com.example.vaideboa.model.Reserva;
 import com.example.vaideboa.model.Rota;
 import com.example.vaideboa.model.User;
@@ -35,8 +36,7 @@ import com.example.vaideboa.repository.UserRepository;
 @Service
 public class ReservaService {
     private static final Logger logger = LoggerFactory.getLogger(ReservaService.class);
-    @Autowired
-    private EmailService emailService;
+    private final EmailService emailService;
     private final AvaliacaoService avaliacaoService;
     private final RotaRepository rotaRepository;
     private final CaronaRepository caronaRepository;
@@ -45,9 +45,10 @@ public class ReservaService {
     private final UserRepository userRepository;
     private final ReservaRepository reservaRepository;
 
-    public ReservaService(AvaliacaoService avaliacaoService, RotaRepository rotaRepository,
+    public ReservaService(EmailService emailService, AvaliacaoService avaliacaoService, RotaRepository rotaRepository,
             CaronaRepository caronaRepository, RotaMapperService rotaMapperService, UserRepository userRepository,
             ReservaRepository reservaRepository) {
+        this.emailService = emailService;
         this.avaliacaoService = avaliacaoService;
         this.rotaRepository = rotaRepository;
         this.caronaRepository = caronaRepository;
@@ -56,7 +57,12 @@ public class ReservaService {
         this.reservaRepository = reservaRepository;
     }
 
-    public List<BuscaRetornaDto> buscarCaronas(BuscaCaronaDto buscaDto){
+    public List<BuscaRetornaDto> buscarCaronas(BuscaCaronaDto buscaDto, String username){
+        Long raio = userRepository.findByUsernameAndAtivoTrue(username)
+                .map(User::getPreferencia)
+                .map(Preferencias::getRaioDeslocamentoMetros)
+                .filter(valor -> valor > 0)
+                .orElse(2000L);
         Point saida = geometryFactory.createPoint(
         new Coordinate(buscaDto.getSaidaLon(), buscaDto.getSaidaLat())
       );
@@ -64,8 +70,8 @@ public class ReservaService {
         new Coordinate(buscaDto.getDestinoLon(), buscaDto.getDestinoLat())
       );
         List<BuscaRetornaDto> buscasRetornosDto = new ArrayList<>();
-        List<Carona> caronas = caronaRepository.buscarCaronasTodoTrajeto(saida, destino, buscaDto.getData());
-        List<Carona> caronasPorParadas = caronaRepository.buscarCaronasPorParadas(saida, destino, buscaDto.getData(), 2000L);
+        List<Carona> caronas = caronaRepository.buscarCaronasTodoTrajeto(saida, destino, buscaDto.getData(), raio);
+        List<Carona> caronasPorParadas = caronaRepository.buscarCaronasPorParadas(saida, destino, buscaDto.getData(), raio);
         System.out.println(caronas.size());
         System.out.println(caronasPorParadas.size());
 
@@ -74,7 +80,6 @@ public class ReservaService {
                 caronas.add(carona);
             }
         }
-        // buscar na api as distancia das caronas para ver se da 10 km mesmo
             for (Carona carona : caronas) {
                 BuscaRetornaDto buscaRetornoDto = new BuscaRetornaDto();
                 Point destino02 = carona.getRota().getDestino();
@@ -104,9 +109,9 @@ public class ReservaService {
                 paradaDto.setLonPonto(parada.getLocalizacao().getX());
                 paradaDto.setTextoPonto(parada.getTextoPonto());
                 paradasDto.add(paradaDto);
+                }
                 RankingDto rankingDto = avaliacaoService.calculaRanking(carona.getMotorista());
                 buscaRetornoDto.setAvaliacaoMotorista(rankingDto);
-                }
                 buscaRetornoDto.setParadas(paradasDto);
                 buscasRetornosDto.add(buscaRetornoDto);
             }

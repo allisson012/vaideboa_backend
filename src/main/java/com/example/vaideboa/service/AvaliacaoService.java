@@ -16,6 +16,8 @@ import com.example.vaideboa.model.Carona;
 import com.example.vaideboa.model.Reserva;
 import com.example.vaideboa.model.User;
 import com.example.vaideboa.model.enums.Ranking;
+import com.example.vaideboa.model.enums.StatusCarona;
+import com.example.vaideboa.model.enums.StatusReserva;
 import com.example.vaideboa.model.enums.TipoAvaliacao;
 import com.example.vaideboa.repository.AvaliacaoRepository;
 import com.example.vaideboa.repository.CaronaRepository;
@@ -44,29 +46,30 @@ private final ReservaRepository reservaRepository;
         }
 
         for (Reserva reserva : reservas) {
+            if(reserva.getStatusReserva() != StatusReserva.CANCELADA && reserva.getStatusReserva() != StatusReserva.PENDENTE){
+                User motorista = carona.getMotorista();
+                User passageiro = reserva.getPassageiro();
 
-            User motorista = carona.getMotorista();
-            User passageiro = reserva.getPassageiro();
+                // motorista avalia passageiro
+                Avaliacao a1 = new Avaliacao();
+                a1.setReserva(reserva);
+                a1.setAvaliador(motorista);
+                a1.setAvaliado(passageiro);
+                a1.setTipo(TipoAvaliacao.MOTORISTA_AVALIA_PASSAGEIRO);
+                a1.setNota(null);
 
-            // motorista avalia passageiro
-            Avaliacao a1 = new Avaliacao();
-            a1.setReserva(reserva);
-            a1.setAvaliador(motorista);
-            a1.setAvaliado(passageiro);
-            a1.setTipo(TipoAvaliacao.MOTORISTA_AVALIA_PASSAGEIRO);
-            a1.setNota(null);
+                avaliacaoRepository.save(a1);
 
-            avaliacaoRepository.save(a1);
+                // passageiro avalia motorista
+                Avaliacao a2 = new Avaliacao();
+                a2.setReserva(reserva);
+                a2.setAvaliador(passageiro);
+                a2.setAvaliado(motorista);
+                a2.setTipo(TipoAvaliacao.PASSAGEIRO_AVALIA_MOTORISTA);
+                a2.setNota(null);
 
-            // passageiro avalia motorista
-            Avaliacao a2 = new Avaliacao();
-            a2.setReserva(reserva);
-            a2.setAvaliador(passageiro);
-            a2.setAvaliado(motorista);
-            a2.setTipo(TipoAvaliacao.PASSAGEIRO_AVALIA_MOTORISTA);
-            a2.setNota(null);
-
-            avaliacaoRepository.save(a2);
+                avaliacaoRepository.save(a2);
+            }
         }
         return true;
     }
@@ -82,11 +85,22 @@ private final ReservaRepository reservaRepository;
             return new ApiResponse(false, "Carona não encontrada");
         }
         Reserva reserva = reservaOpt.get();
-
+        if (reserva.getCarona().getStatusCarona() != StatusCarona.CONCLUIDA) {
+            return new ApiResponse(false,"Só é possível avaliar após a conclusão da carona");
+        }
+        if(reserva.getStatusReserva() == StatusReserva.CANCELADA){
+            return new ApiResponse(false,"Não é possivel cadastrar avaliação para reserva cancelada");
+        }
+        if(reserva.getStatusReserva() == StatusReserva.PENDENTE){
+            return new ApiResponse(false,"Não é possivel cadastrar avaliação para reserva pendente");
+        }
         boolean isMotorista = reserva.getCarona().getMotorista().equals(user);
         boolean isPassageiro = reserva.getPassageiro().equals(user);
         if(!isMotorista && !isPassageiro){
             return new ApiResponse(false, "Usuário não pertence a esta reserva");
+        }
+        if(!Double.isFinite(avaliacaoDto.getEstrela()) || avaliacaoDto.getEstrela() < 1 || avaliacaoDto.getEstrela() > 5){
+            return new ApiResponse(false,"A nota deve estar entre 1 e 5");
         }
 
         List<Avaliacao> avaliacoes = reserva.getAvaliacoes();

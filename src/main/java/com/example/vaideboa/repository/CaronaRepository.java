@@ -56,7 +56,7 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
 
 
 
-    // raio de distancia é 500 m estou pensando em deixar isso fixo 
+    // O raio é informado em metros a partir das preferências do usuário.
     @Query(value = """
     SELECT c.*
     FROM carona c
@@ -65,13 +65,13 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
     ST_DWithin(
         r.trajeto::geography,
         ST_SetSRID(:saida, 4326)::geography,
-        2000
+        :raio
     )
     AND
     ST_DWithin(
         r.trajeto::geography,
         ST_SetSRID(:destino, 4326)::geography,
-        2000
+        :raio
     )
     AND
     ST_LineLocatePoint(
@@ -91,7 +91,8 @@ public interface CaronaRepository extends JpaRepository<Carona,Long>{
     List<Carona> buscarCaronasTodoTrajeto(
         @Param("saida") Point saida,
         @Param("destino") Point destino,
-        @Param("data") LocalDate data
+        @Param("data") LocalDate data,
+        @Param("raio") Long raio
     );
 
     List<Carona> findByDataAndHoraBetweenAndNotificado1hFalseAndStatusCarona(

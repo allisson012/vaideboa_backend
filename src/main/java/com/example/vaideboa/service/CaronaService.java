@@ -107,6 +107,13 @@ public class CaronaService {
       if (precoTotal == null || !Double.isFinite(precoTotal) || precoTotal < 0) {
         return false;
       }
+      if (caronaDto.getData() == null || caronaDto.getHora() == null) {
+        return false;
+      }
+      LocalDateTime horarioSaida = LocalDateTime.of(caronaDto.getData(),caronaDto.getHora());
+      if (!horarioSaida.isAfter(LocalDateTime.now())) {
+          return false;
+      }
       Rota rota = new Rota();
       Carona carona = new Carona();
       Point saida = geometryFactory.createPoint(
@@ -122,7 +129,7 @@ public class CaronaService {
       List<PontoParada> pontosParadas = new ArrayList<>();
       String geojson;
 
-      if(!caronaDto.getParadas().isEmpty()){
+      if(caronaDto.getParadas() != null && !caronaDto.getParadas().isEmpty()){
         List<ParadaDto> paradasOrdenadas = caronaDto.getParadas().stream()
           .sorted(Comparator.comparingInt(ParadaDto::getIndexOrder))
           .toList();

@@ -12,5 +12,6 @@ public class PreferenciasDto {
     private final NivelPreferencia musica;
     private final NivelPreferencia cigarro;
     private final NivelPreferencia animais;
+    private final Long raioDeslocamentoMetros;
     
 }

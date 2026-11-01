@@ -48,6 +48,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             JwtClaimsSet claims = JwtClaimsSet.builder()
                     .issuer("vaideboa")
                     .subject(user.getUsername())
+                    .claim("type", "ACCESS")
                     .issuedAt(now)
                     .expiresAt(now.plusSeconds(86400))
                     .claim("id", user.getId())

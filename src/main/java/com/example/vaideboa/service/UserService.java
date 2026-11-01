@@ -24,6 +24,7 @@ import com.example.vaideboa.repository.UserRepository;
 import com.example.vaideboa.repository.CaronaRepository;
 import com.example.vaideboa.repository.PedidoCaronaRepository;
 import com.example.vaideboa.validator.CpfValidator;
+import com.example.vaideboa.validator.EmailValidator;
 import com.example.vaideboa.validator.SenhaValidator;
 
 @Service
@@ -31,17 +32,19 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final CpfValidator cpfValidator;
+    private final EmailValidator emailValidator;
     private final SenhaValidator senhaValidator;
     private final AvaliacaoService avaliacaoService;
     private final CaronaRepository caronaRepository;
     private final PedidoCaronaRepository pedidoCaronaRepository;
 
     public UserService(PasswordEncoder passwordEncoder, UserRepository userRepository, CpfValidator cpfValidator,
-            SenhaValidator senhaValidator, AvaliacaoService avaliacaoService, CaronaRepository caronaRepository,
-            PedidoCaronaRepository pedidoCaronaRepository) {
+            EmailValidator emailValidator, SenhaValidator senhaValidator, AvaliacaoService avaliacaoService,
+            CaronaRepository caronaRepository, PedidoCaronaRepository pedidoCaronaRepository) {
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.cpfValidator = cpfValidator;
+        this.emailValidator = emailValidator;
         this.senhaValidator = senhaValidator;
         this.avaliacaoService = avaliacaoService;
         this.caronaRepository = caronaRepository;
@@ -52,19 +55,30 @@ public class UserService {
         if(userRepository.existsByUsername(userDto.getUsername())){
         throw new EmailJaCadastradoException();
         }
-
+        if(userDto.getPassword() == null || userDto.getPassword().isEmpty() || userDto.getPassword().isBlank()){
+            return false;
+        }
+        if(userDto.getNome() == null || userDto.getNome().isEmpty() || userDto.getNome().isBlank()){
+            return false;
+        }
+        if (!SenhaValidator.senhaValida(userDto.getPassword())){
+            return false;
+        }
+        if(!EmailValidator.emailValido(userDto.getUsername())){
+            return false;
+        }
         String senhaCriptografada = passwordEncoder.encode(userDto.getPassword());
         User user = new User();
+
         user.setNome(userDto.getNome());
         user.setUsername(userDto.getUsername());
-        // validar se a senha corresponde a estrutura definida letra maiscula etc
+
         user.setPassword(senhaCriptografada);
         user.setAtivo(true);
         user.setContaNaoBloqueada(true);
         user.setContaNaoExpirada(true);
         user.setCredenciaisNaoExpiradas(true);
         user.setGenero(Generos.NAO_INFORMADO);
-        // setando as prefencias com valor padrão
         Preferencias preferencias = new Preferencias();
         preferencias.setAnimais(NivelPreferencia.TALVEZ);
         preferencias.setCigarro(NivelPreferencia.TALVEZ);
@@ -93,7 +107,8 @@ public class UserService {
             pref != null && pref.getConversa() != null ? pref.getConversa(): NivelPreferencia.TALVEZ,
             pref != null && pref.getMusica() != null ? pref.getMusica(): NivelPreferencia.TALVEZ,
             pref != null && pref.getCigarro() != null ? pref.getCigarro(): NivelPreferencia.TALVEZ,
-            pref != null && pref.getAnimais() != null ? pref.getAnimais(): NivelPreferencia.TALVEZ
+            pref != null && pref.getAnimais() != null ? pref.getAnimais(): NivelPreferencia.TALVEZ,
+            pref != null && pref.getRaioDeslocamentoMetros() != null ? pref.getRaioDeslocamentoMetros() : 2000L
         );
 
         RankingDto rankingDto = new RankingDto();
@@ -132,7 +147,8 @@ public class UserService {
             preferencias != null && preferencias.getConversa() != null ? preferencias.getConversa() : NivelPreferencia.TALVEZ,
             preferencias != null && preferencias.getMusica() != null ? preferencias.getMusica() : NivelPreferencia.TALVEZ,
             preferencias != null && preferencias.getCigarro() != null ? preferencias.getCigarro() : NivelPreferencia.TALVEZ,
-            preferencias != null && preferencias.getAnimais() != null ? preferencias.getAnimais() : NivelPreferencia.TALVEZ
+            preferencias != null && preferencias.getAnimais() != null ? preferencias.getAnimais() : NivelPreferencia.TALVEZ,
+            preferencias != null && preferencias.getRaioDeslocamentoMetros() != null ? preferencias.getRaioDeslocamentoMetros() : 2000L
         );
         PerfilPublicoDto perfilDto = new PerfilPublicoDto(
             perfil.getId(), perfil.getNome(), perfil.getFoto(), perfil.getGenero().getDescricao(),
@@ -237,6 +253,9 @@ public class UserService {
     }
 
     public ApiResponse atualizarPreferencias(PreferenciasDto dto, String username){
+        if (dto.getRaioDeslocamentoMetros() != null && dto.getRaioDeslocamentoMetros() <= 0) {
+            return new ApiResponse(false, "O raio de deslocamento deve ser maior que zero, em metros");
+        }
         Optional<User> userOpt = userRepository.findByUsernameAndAtivoTrue(username);
 
         if (userOpt.isEmpty()){
@@ -253,6 +272,11 @@ public class UserService {
             pref.setMusica(dto.getMusica());
             pref.setCigarro(dto.getCigarro());
             pref.setAnimais(dto.getAnimais());
+            if (dto.getRaioDeslocamentoMetros() != null) {
+                pref.setRaioDeslocamentoMetros(dto.getRaioDeslocamentoMetros());
+            } else if (pref.getRaioDeslocamentoMetros() == null) {
+                pref.setRaioDeslocamentoMetros(2000L);
+            }
         } catch (IllegalArgumentException e){
             return new ApiResponse(false, "Valor inválido para preferências", null);
         }
